@@ -1,0 +1,14 @@
+.gitlab-ci.yml
+tsconfig.json
+docs/
+tslint.json
+tsconfig.json
+requirements.txt
+.prettierrc.json
+.prettierignore
+.npmignore
+.vscode/
+src/*
+!src/index.d.ts
+.eslintignore
+.eslintrc.json
