@@ -78,7 +78,7 @@ export function toNlpTextResponse(
               } as NlpStatus);
 
     return {
-        agentName: agentName,
+        agentName,
         status,
         textRequestResult: {
             action: result.action,

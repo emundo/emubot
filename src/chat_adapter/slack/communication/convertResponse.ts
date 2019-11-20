@@ -10,8 +10,8 @@ export function convertToSlackResponse(
         case 'text':
             return {
                 text: response.Message.text,
-                user: user,
-                channel: channel,
+                user,
+                channel,
                 type: 'text',
             };
 

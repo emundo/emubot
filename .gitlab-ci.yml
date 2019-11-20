@@ -3,21 +3,44 @@ image: node:13.0.1-alpine
 stages:
     - check
     - compile
+    - analysis
 
 cache:
-    key: 'default'
+    key: '$CI_COMMIT_REF_NAME'
+    untracked: true
     paths:
         - node_modules/
 
-before_script:
-    - npm install --verbose
-
 check:
     stage: check
+    before_script:
+        - npm ci --verbose
     script:
-        - npm run lint # includes prettier
+        - npm run lint
 
 compile:
     stage: compile
     script:
         - npm run tsc
+
+sonar-job-master:
+    stage: analysis
+    image: emundo/docker-compose-openjdk-node-sonarqube-scanner:latest
+    script:
+        - npm run sonar-scanner
+    allow_failure: true
+    only:
+        - master
+    dependencies:
+        - compile
+
+sonar-preview:
+    stage: analysis
+    image: emundo/docker-compose-openjdk-node-sonarqube-scanner:latest
+    script:
+        - node_modules/sonarqube-scanner/dist/bin/sonar-scanner -Dsonar.analysis.mode=preview -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+    allow_failure: true
+    only:
+        - merge_requests
+    dependencies:
+        - compile

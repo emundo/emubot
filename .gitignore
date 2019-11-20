@@ -8,6 +8,7 @@ deploy/
 src/configuration_internal/
 docs/setup/
 .vscode/
+.scannerwork/
 
 # Created by https://www.gitignore.io/api/node,linux,macos,visualstudiocode
 

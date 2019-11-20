@@ -1,6 +1,6 @@
 {
-    "name": "emubot",
-    "version": "0.1.0",
+    "name": "@emundo/emubot",
+    "version": "0.2.0",
     "description": "Middleware used to easily setup chatbots on a variety of messenger platforms using different NLP services.",
     "keywords": [
         "chatbot",
@@ -40,7 +40,8 @@
         "tsc": "tsc",
         "start": "node dist/main.js",
         "compodocs": "npx compodoc -p tsconfig.json -d docs/api_reference/ --theme readthedocs -n 'emubot API Documentation' --customFavicon ./docs/_static/favicon.png -a ./docs/_static/",
-        "createDocs": "rm -rf ./docs/api_reference && npm run compodocs && cd docs && make html"
+        "createDocs": "rm -rf ./docs/api_reference && npm run compodocs && cd docs && make html",
+        "sonar-scanner": "node_modules/sonarqube-scanner/dist/bin/sonar-scanner"
     },
     "devDependencies": {
         "@types/body-parser": "1.17.1",
@@ -57,6 +58,7 @@
         "eslint": "6.6.0",
         "eslint-config-prettier": "6.5.0",
         "eslint-plugin-prettier": "3.1.1",
-        "prettier": "1.18.2"
+        "prettier": "1.18.2",
+        "sonarqube-scanner": "2.5.0"
     }
 }

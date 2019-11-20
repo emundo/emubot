@@ -109,9 +109,9 @@ function createRequestConfiguration(
 ): OptionsWithUrl {
     return {
         body: {
-            channel: channel,
-            text: text,
-            user: user,
+            channel,
+            text,
+            user,
         },
         headers: {
             Accept: 'application/json',

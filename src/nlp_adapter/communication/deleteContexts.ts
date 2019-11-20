@@ -83,7 +83,7 @@ function createRequestConfigurationSelectedContexts(
 ): request.OptionsWithUrl {
     return {
         body: {
-            contexts: contexts,
+            contexts,
             user: internalUserId,
         },
         headers: {
