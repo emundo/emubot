@@ -56,7 +56,7 @@ function createPostRequestConfiguration(
 
     return {
         body: {
-            contexts: contexts,
+            contexts,
             lifespan: dialogflowConfig.agents[agentName].defaultLifespan,
             user: internalUserId,
         },

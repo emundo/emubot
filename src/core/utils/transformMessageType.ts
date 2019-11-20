@@ -87,11 +87,11 @@ function handleCustomPayload(
         case 'callButton':
             const button = buildButton(message.payload);
 
-            return { Message: button, messengerUserId: messengerUserId };
+            return { Message: button, messengerUserId };
         case 'customQuickReply':
             const quickreply = buildQuickreply(message.payload);
 
-            return { Message: quickreply, messengerUserId: messengerUserId };
+            return { Message: quickreply, messengerUserId };
         default:
             logger.error(LOG_MESSAGES.core.unsupportedCustomPayloadError);
             throw new Error(MESSAGES.error.handlingBetweenCoreAndChatAdapter);

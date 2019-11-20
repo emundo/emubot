@@ -16,5 +16,5 @@ export type SlackMessage = {
 
     ok: boolean;
 
-    subtype: string | undefined;
+    subtype?: string;
 };

@@ -40,7 +40,7 @@ export function toNlpTextResponse(
     );
 
     return {
-        agentName: agentName,
+        agentName,
         status: {
             errorDetails: undefined,
             errorType: undefined,

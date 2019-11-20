@@ -12,3 +12,4 @@ src/*
 !src/index.d.ts
 .eslintignore
 .eslintrc.json
+.scannerwork/

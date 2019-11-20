@@ -3,7 +3,6 @@ import { NlpResponse } from '../../model/NlpAdapterResponse';
 import { logger } from '../../../logger';
 import * as dialogflow from 'dialogflow';
 import { toNlpTextResponse } from './responseConverters';
-import { DetectIntentRequest } from 'dialogflow';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getAllContexts } from './getContexts';
 import { getConfig } from '../../../core/getConfig';
@@ -44,7 +43,7 @@ function createDialogflowRequestConfiguration(
     textRequest: TextRequest,
     sessionPath: string,
     agentName: string,
-): DetectIntentRequest {
+): dialogflow.DetectIntentRequest {
     return {
         queryInput: {
             text: {

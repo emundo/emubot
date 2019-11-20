@@ -45,7 +45,7 @@ export function toNlpTextResponse(
     const isFallbackIntent = result.metadata.isFallbackIntent === 'true';
 
     return {
-        agentName: agentName,
+        agentName,
         status: {
             errorDetails: status.errorDetails,
             errorType: status.errorType,

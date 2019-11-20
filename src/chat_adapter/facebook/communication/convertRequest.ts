@@ -77,8 +77,8 @@ function makeRequest(
     isFromAdmin: boolean,
 ): ChatAdapterRequest {
     return {
-        isFromAdmin: isFromAdmin,
-        message: message,
-        type: type,
+        isFromAdmin,
+        message,
+        type,
     } as ChatAdapterRequest;
 }

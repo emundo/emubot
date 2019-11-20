@@ -1,5 +1,4 @@
 import * as express from 'express';
-import { json } from 'body-parser';
 import { logger } from '../../../logger';
 import {
     FacebookPostRequest,
@@ -14,8 +13,7 @@ import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import * as _ from 'lodash';
 import { getConfig, getPort } from '../../../core/getConfig';
 import { sendMultipleResponses } from './sendResponses';
-// import { SHA1, enc} from 'crypto-js'; //required for message validation
-import bodyParser = require('body-parser');
+import * as bodyParser from 'body-parser';
 import { MESSAGES } from '../../../constants/messages';
 
 // IMPORTANT: The paths can be changed. However, they must be in sync with the settings in your Facebook application.
@@ -48,7 +46,7 @@ export function initWebhook(
         process.exit(1);
     }
 
-    const app = express().use(json());
+    const app = express().use(bodyParser.json());
     app.use(bodyParser.raw());
 
     app.listen(getPort(), () =>
