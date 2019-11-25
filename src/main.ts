@@ -8,7 +8,6 @@ import { setConfig } from './core/getConfig';
  * (used below) is currently REQUIRED to run your application since `setConfig(config)` specifies
  * your chatAdapter and nlpAdapter.
  */
-//setPort(config.server.port);
 setConfig(config);
 
 /**

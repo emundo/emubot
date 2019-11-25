@@ -23,11 +23,3 @@ export function getConfig(): Config<ChatAdapter, NlpAdapter> {
 export function setConfig(userConfig: Config<ChatAdapter, NlpAdapter>): void {
     config = userConfig;
 }
-
-/**
- * Avoid current circular dependencies. Will be reworked in the next update.
- */
-
-export function getPort(): number {
-    return config.server.port;
-}
