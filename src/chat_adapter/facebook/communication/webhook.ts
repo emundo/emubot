@@ -10,15 +10,11 @@ import { createResponse } from '../../../core/utils/responseUtils';
 
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { ChatAdapterResponse } from '../../ChatAdapterResponse';
-import * as _ from 'lodash';
-import { getConfig, getPort } from '../../../core/getConfig';
+import * as lodash from 'lodash';
+import { getConfig } from '../../../core/getConfig';
 import { sendMultipleResponses } from './sendResponses';
 import * as bodyParser from 'body-parser';
 import { MESSAGES } from '../../../constants/messages';
-
-// IMPORTANT: The paths can be changed. However, they must be in sync with the settings in your Facebook application.
-const WEBHOOK_PATH = '/webhook';
-const WEBHOOK_VERIFICATION = '/webhook';
 
 /**
  * Initializes the webhook and awaits new messages. If a message is received, `handleRequest` is triggered, which converts
@@ -30,6 +26,9 @@ export function initWebhook(
         messengerUserId: string,
     ) => Promise<Response<ChatAdapterResponse[]>>,
 ): void {
+    const WEBHOOK_PATH = getConfig().platform.chat.webhook_path;
+    const WEBHOOK_VERIFICATION = getConfig().platform.chat.webhook_path;
+    const PORT = getConfig().server.port;
     // Check if all required tokens are set.
     const facebookConfig = (getConfig().platform
         .chat as unknown) as FacebookChatConfig;
@@ -49,10 +48,10 @@ export function initWebhook(
     const app = express().use(bodyParser.json());
     app.use(bodyParser.raw());
 
-    app.listen(getPort(), () =>
+    app.listen(PORT, () =>
         logger.verbose(
             `${LOG_MESSAGES.chat.facebook}
-            ${LOG_MESSAGES.chat.webhookListening} ${getPort()}!`,
+            ${LOG_MESSAGES.chat.webhookListening} ${PORT}!`,
         ),
     );
 
@@ -131,7 +130,7 @@ function handleRequests(
         messengerUserId: string,
     ) => Promise<Response<ChatAdapterResponse[]>>,
 ): Promise<Response<ChatAdapterResponse[]>>[] {
-    return _.flatMap(body.entry, entry => {
+    return lodash.flatMap(body.entry, entry => {
         return entry.messaging.map(async messaging => {
             try {
                 return await handleRequest(messaging, messaging.sender.id);

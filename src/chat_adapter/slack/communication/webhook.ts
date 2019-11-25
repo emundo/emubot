@@ -3,7 +3,7 @@ import { post, OptionsWithUrl } from 'request-promise-native';
 import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import { SlackRequest, SlackMessage } from '../model/SlackRequest';
 import { Response } from '../../../core/model/Response';
-import { getConfig, getPort } from '../../../core/getConfig';
+import { getConfig } from '../../../core/getConfig';
 import { SlackEventAdapter } from '@slack/events-api/dist/adapter';
 import { logger } from '../../../logger';
 import { convertToSlackResponse } from './convertResponse';
@@ -19,15 +19,15 @@ export async function initWebhook(
         request: SlackRequest,
     ) => Promise<Response<ChatAdapterResponse[]>>,
 ): Promise<void> {
-    const slackSigningSecret: string = getConfig().platform.chat.appSecret;
-    const port: number = getPort();
+    const SLACK_SIGNING_SECRET: string = getConfig().platform.chat.appSecret;
+    const PORT: number = getConfig().server.port;
 
     const slackEvents: SlackEventAdapter = createEventAdapter(
-        slackSigningSecret,
+        SLACK_SIGNING_SECRET,
     );
 
-    await slackEvents.start(port);
-    logger.info(`Server started on port ${port}!`);
+    await slackEvents.start(PORT);
+    logger.info(`Server started on port ${PORT}!`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (slackEvents as any).on('message', async (event: SlackMessage) =>
