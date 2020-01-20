@@ -28,14 +28,6 @@
             "warn",
             { "allowExpressions": true }
         ],
-        "padding-line-between-statements": [
-            "error",
-            {
-                "blankLine": "always",
-                "prev": "block",
-                "next": "*"
-            }
-        ],
         "@typescript-eslint/interface-name-prefix": ["off"],
         "@typescript-eslint/member-ordering": "warn",
         "@typescript-eslint/no-explicit-any": "error",
@@ -53,6 +45,29 @@
         "@typescript-eslint/restrict-plus-operands": "error",
         "@typescript-eslint/prefer-interface": "off",
         "no-trailing-spaces": "warn",
+        "padding-line-between-statements": [
+            "error",
+            {
+                "blankLine": "always",
+                "prev": "block",
+                "next": "*"
+            },
+            {
+                "blankLine": "always",
+                "prev": "*",
+                "next": "function"
+            },
+            {
+                "blankLine": "always",
+                "prev": "import",
+                "next": "*"
+            },
+            {
+                "blankLine": "any",
+                "prev": "import",
+                "next": "import"
+            }
+        ],
         "newline-before-return": "error",
         "lines-between-class-members": "error",
         "max-len": ["error", { "comments": 125, "code": 120 }]

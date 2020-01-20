@@ -1,6 +1,6 @@
 {
     "name": "@emundo/emubot",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Middleware used to easily setup chatbots on a variety of messenger platforms using different NLP services.",
     "keywords": [
         "chatbot",
@@ -14,16 +14,18 @@
         "dialogflow"
     ],
     "license": "apache-2.0",
-    "main": "dist/index.js",
-    "types": "src/index.d.ts",
+    "main": "dist/framework/index.js",
+    "types": "src/framework/index.d.ts",
     "repository": {
         "type": "git",
         "url": "https://github.com/emundo/emubot.git"
     },
     "dependencies": {
-        "@compodoc/compodoc": "1.1.11",
         "@slack/events-api": "2.3.0",
+        "argparse": "^1.0.10",
         "body-parser": "1.19.0",
+        "chalk": "^3.0.0",
+        "cors": "^2.8.5",
         "crypto-js": "3.1.9-1",
         "dialogflow": "0.12.2",
         "express": "4.17.1",
@@ -31,19 +33,22 @@
         "remove-markdown": "0.3.0",
         "request": "2.88.0",
         "request-promise-native": "1.0.8",
-        "typescript": "3.6.4",
+        "typescript": "3.7.4",
         "winston": "3.2.1"
     },
     "scripts": {
         "lint": "eslint 'src/**/*.ts'; exit 0",
         "prettier": "prettier --config .prettierrc.json --ignore-path .prettierignore --write 'src/**/*.ts'",
         "tsc": "tsc",
-        "start": "node dist/main.js",
+        "start": "node dist/framework/main.js",
         "compodocs": "npx compodoc -p tsconfig.json -d docs/api_reference/ --theme readthedocs -n 'emubot API Documentation' --customFavicon ./docs/_static/favicon.png -a ./docs/_static/",
         "createDocs": "rm -rf ./docs/api_reference && npm run compodocs && cd docs && make html",
-        "sonar-scanner": "node_modules/sonarqube-scanner/dist/bin/sonar-scanner"
+        "sonar-scanner": "node_modules/sonarqube-scanner/dist/bin/sonar-scanner",
+        "start-cli": "node dist/tools/cli.js"
     },
     "devDependencies": {
+        "@compodoc/compodoc": "1.1.11",
+        "@types/argparse": "^1.0.38",
         "@types/body-parser": "1.17.1",
         "@types/cors": "2.8.6",
         "@types/dialogflow": "0.11.0",
@@ -53,12 +58,12 @@
         "@types/remove-markdown": "0.1.1",
         "@types/request-promise-native": "1.0.17",
         "@types/winston": "2.4.4",
-        "@typescript-eslint/eslint-plugin": "2.6.0",
-        "@typescript-eslint/parser": "2.6.0",
-        "eslint": "6.6.0",
-        "eslint-config-prettier": "6.5.0",
-        "eslint-plugin-prettier": "3.1.1",
-        "prettier": "1.18.2",
+        "@typescript-eslint/eslint-plugin": "2.16.0",
+        "@typescript-eslint/parser": "2.16.0",
+        "eslint": "6.8.0",
+        "eslint-config-prettier": "6.9.0",
+        "eslint-plugin-prettier": "3.1.2",
+        "prettier": "1.19.1",
         "sonarqube-scanner": "2.5.0"
     }
 }

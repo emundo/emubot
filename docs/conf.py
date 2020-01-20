@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'emubot'
-copyright = '2019, eMundo GmbH'
+copyright = '2020, eMundo GmbH'
 author = 'Fiete Lüer, Maxim Dolgich'
 
 # -- General configuration ---------------------------------------------------

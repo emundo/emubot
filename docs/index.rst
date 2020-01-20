@@ -36,6 +36,7 @@ Welcome to the :code:`emubot` Framework
 
    chat_adapter/facebook_messenger
    chat_adapter/slack
+   chat_adapter/cli_client
    chat_adapter/your_custom_chat_adapter
 
 .. toctree::

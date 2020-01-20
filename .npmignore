@@ -9,7 +9,8 @@ requirements.txt
 .npmignore
 .vscode/
 src/*
-!src/index.d.ts
+!src/framework/index.d.ts
 .eslintignore
 .eslintrc.json
 .scannerwork/
+sonar-project.properties

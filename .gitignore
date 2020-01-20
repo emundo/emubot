@@ -5,7 +5,7 @@ docs/_build
 docs/_templates
 docs/api_reference
 deploy/
-src/configuration_internal/
+src/framework/configuration_internal/
 docs/setup/
 .vscode/
 .scannerwork/

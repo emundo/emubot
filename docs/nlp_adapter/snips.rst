@@ -30,10 +30,11 @@ your bot to use.
 
     python -m snips_nlu download <language>
 
+
 Afterwards you should be good to go and can follow along the lines of the
 `Snips NLU tutorial <https://snips-nlu.readthedocs.io/en/latest/tutorial.html>`_
 to define and train your bot.
-Snips NLU does not provide a server by default. :code:`emubot ` provides
+Snips NLU does not provide a server by default. :code:`emubot` provides
 a simple test server based on the `Flask <https://github.com/pallets/flask>`_
 web application framework, which you can adapt to your needs. Your server
 should provide a POST route for the following request:
