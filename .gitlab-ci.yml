@@ -1,6 +1,7 @@
 image: node:13.0.1-alpine
 
 stages:
+    - install
     - check
     - compile
     - analysis
@@ -11,17 +12,23 @@ cache:
     paths:
         - node_modules/
 
+install:
+    stage: install
+    script:
+        - npm ci --verbose
+
 check:
     stage: check
-    before_script:
-        - npm ci --verbose
     script:
         - npm run lint
 
 compile:
     stage: compile
     script:
+        - npm run tsc -- --version
         - npm run tsc
+    dependencies:
+        - install
 
 sonar-job-master:
     stage: analysis

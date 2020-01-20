@@ -18,13 +18,19 @@ Offering this framework hopefully enables many individuals and (also small) comp
 ![Architecture overview](docs/_static/architecture.png)
 
 ### Setup
-To start a chatbot you have to
-1. Create an agent using an NLP service of your choice, get the required credentials and paste them into the configuration file (more information on these can be found at the distinctive section in our docs (see below).
-2. Install the dependencies ([npm](https://www.npmjs.com/get-npm) required): open a terminal and type `npm install`.
-3. Choose the configuration in your `src/main.ts`. Make sure to use the correct NLP service (the one you just set up).
-4. Compile the code (`npm run tsc`) and run your bot (`npm run start`).
+#### Test the framework
+The easiest way to test the framework is by using your console instead of a chat application like Facebook or Slack, since these platforms 
+require you to setup a server with a certificate to communicate over https.
+To just test the basic setup, you can follow these steps:
 
-The simplest way to test whether your chatbot works would be to send the messages from your local machine to your chatbot. A CLI-Adapter which can be used to locally test if your bot is up and running, receives messages and sends an exemplar query, will be published soon.
+1. Install the dependencies ([npm](https://www.npmjs.com/get-npm) required): open a terminal and type `npm install`.
+2. Compile the code (`npm run tsc`) and run your bot (`npm run start`). The framework will now await messages.
+3. Open another terminal and start the CLI client: `npm run start-cli`. Just type a message and hit enter to check if everything works out.
+
+You will receive a message telling you that you did not set up a NLP service yet. If you want to connect your CLI to an existing NLP service:
+
+1. Create an agent using a supported NLP service of your choice, get the required credentials and paste them into the configuration file (more information on these can be found at the distinctive section in our docs (see below).
+2. Choose the configuration in your `src/main.ts`. Make sure to use the correct configuration file with the correct adapters (the CLI adapter and the adapter for the NLP service you just chose to use).
 
 #### Setup On Existing Messaging Services
 If you want to deploy your bot to a messaging service such as Slack, you have to get the respective credentials (see [docs](https://emundo.github.io/emubot_doc/_build/html/index.html)) required to authenticate. Furthermore, you usually have to setup a server and communicate over https.
