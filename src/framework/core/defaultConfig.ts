@@ -16,9 +16,8 @@ export async function dummyHandleMessage(
 ): Promise<Response<ChatAdapterResponse[]>> {
     const text: ChatAdapterTextMessage = {
         type: 'text',
-        text:
-            `Welcome to emubot! If you want to test the core functionality you will need to provide a valid` +
-            `configuration file!`,
+        text: `Welcome to emubot! If you want to test the core functionality you will
+               need to provide a valid configuration file!`,
     };
     const resp: ChatAdapterResponse = {
         Message: text,
