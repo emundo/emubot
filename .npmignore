@@ -8,9 +8,10 @@ requirements.txt
 .prettierignore
 .npmignore
 .vscode/
-src/*
+src/**/*
 !src/framework/index.d.ts
 .eslintignore
 .eslintrc.json
 .scannerwork/
 sonar-project.properties
+*.log

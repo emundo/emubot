@@ -67,7 +67,9 @@ async function sendMessage(text: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
-    const description = colorizeSuccess(`CLI test client for the emubot framework.`);
+    const description = colorizeSuccess(
+        `CLI test client for the emubot framework.`,
+    );
     const parser = new ArgumentParser({
         description: description,
         addHelp: true,
@@ -86,7 +88,7 @@ async function main(): Promise<void> {
     });
     const args = parser.parseArgs(process.argv.slice(2));
 
-    const LOG_LEVEL = args.verbose === undefined ? 'info' : 'verbose';
+    const LOG_LEVEL = args.verbose ? 'verbose' : 'info';
 
     logger = createLogger({
         transports: [
@@ -107,8 +109,8 @@ async function main(): Promise<void> {
 
     await sendHello();
 
-    stdin.on('data', async (text: string) => {
-        await sendMessage(text);
+    stdin.on('data', async (data: Buffer) => {
+        await sendMessage(data.slice(0, data.length - 1).toString());
         prompt();
     });
 }
