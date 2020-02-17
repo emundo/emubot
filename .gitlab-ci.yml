@@ -4,6 +4,7 @@ stages:
     - install
     - check
     - compile
+    - test
     - analysis
 
 cache:
@@ -29,6 +30,10 @@ compile:
         - npm run tsc
     dependencies:
         - install
+
+test:
+    stage: test
+    script: npm run test
 
 sonar-job-master:
     stage: analysis

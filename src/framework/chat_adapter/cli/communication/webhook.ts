@@ -1,6 +1,5 @@
 import * as express from 'express';
 import * as http from 'http';
-import { json } from 'body-parser';
 import * as cors from 'cors';
 import { logger } from '../../../logger';
 import {
@@ -25,6 +24,8 @@ import { LOG_MESSAGES } from '../../../constants/logMessages';
  */
 // tslint:disable-next-line: max-func-body-length
 export function initWebhook(
+    server: http.Server,
+    app: express.Express,
     handleRequest: (
         request: CliClientRequest,
     ) => Promise<Response<ChatAdapterResponse[]>>,
@@ -35,10 +36,7 @@ export function initWebhook(
 
     logger.info(`Init webhook for CLI chat ...`);
 
-    const app = express().use(json());
     app.use(cors({ origin: '*' }));
-
-    const server = http.createServer(app);
 
     // Handle incoming message.
     app.post(WEBHOOK_PATH, async (req, res) => {

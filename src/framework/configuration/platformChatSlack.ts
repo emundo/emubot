@@ -10,6 +10,6 @@ export const platformChatSlack: SlackConfig = {
     token: 'YOUR_SLACK_OAUTH_TOKEN',
     constructor: SlackAdapter,
     name: 'slack',
-    url: 'https://slack.com/api/chat.postMessage',
+    url: 'https://slack.com/api/',
     webhook_path: '/webhook',
 };

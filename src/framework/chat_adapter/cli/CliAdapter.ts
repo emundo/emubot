@@ -1,3 +1,6 @@
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import { Server, createServer } from 'http';
 import { ChatAdapter } from '../IChatAdapter';
 import { ChatAdapterRequest } from '../ChatAdapterRequest';
 import { ChatAdapterResponse } from '../ChatAdapterResponse';
@@ -14,8 +17,14 @@ import { CliClientRequest } from './model/CliClientRequest';
  * @implements {ChatAdapter}
  */
 export class CliAdapter implements ChatAdapter {
-    contactClient(_: ChatAdapterResponse): Promise<void> {
-        throw new Error('Method not implemented.');
+    private readonly server: Server;
+
+    private readonly app: express.Express;
+
+    constructor() {
+        this.app = express().use(bodyParser.json());
+        this.app.use(bodyParser.raw());
+        this.server = createServer(this.app);
     }
 
     public async init(
@@ -24,11 +33,23 @@ export class CliAdapter implements ChatAdapter {
             messengerUserId: string,
         ) => Promise<Response<ChatAdapterResponse[]>>,
     ): Promise<void> {
-        initWebhook(async (message: CliClientRequest) => {
-            return handleRequest(
-                convertIntoChatAdapterRequest(message),
-                message.id,
-            );
-        });
+        initWebhook(
+            this.server,
+            this.app,
+            async (message: CliClientRequest) => {
+                return handleRequest(
+                    convertIntoChatAdapterRequest(message),
+                    message.id,
+                );
+            },
+        );
+    }
+
+    public async deinit(): Promise<void> {
+        this.server.close();
+    }
+
+    public contactClient(_: ChatAdapterResponse): Promise<void> {
+        throw new Error('Method not implemented.');
     }
 }

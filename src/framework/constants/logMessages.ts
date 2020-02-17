@@ -27,6 +27,7 @@ const DEFAULT_LOG_MESSAGES = {
             'Unable to verify Webhook. Unauthorized Access: Verify tokens not present',
         webhookVerified: 'Webhook is verfified.',
         websocketError: 'Message could not be sent to user (contactClient).',
+        unknownClient: 'Tried to contact unknown client: ',
     },
     connections: {
         component: {
@@ -47,6 +48,7 @@ const DEFAULT_LOG_MESSAGES = {
             'An error occured during the transformation of the NLPMessage to ChatAdapterResponse.',
         unsupportedButtonError: 'This button is not supported.',
         unsupportedCustomPayloadError: 'This payload is not supported.',
+        couldNotStopCore: 'The core could not be stopped gracefully: ',
     },
     database: {
         connectionUndefined:

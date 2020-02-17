@@ -1,4 +1,5 @@
 import * as express from 'express';
+import { Server } from 'http';
 import { logger } from '../../../logger';
 import {
     FacebookPostRequest,
@@ -12,7 +13,6 @@ import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import * as lodash from 'lodash';
 import { getConfig } from '../../../core/getConfig';
 import { sendMultipleResponses } from './sendResponses';
-import * as bodyParser from 'body-parser';
 import { MESSAGES } from '../../../constants/messages';
 
 /**
@@ -20,6 +20,8 @@ import { MESSAGES } from '../../../constants/messages';
  * the incoming message into a generalized format and passes it into the core for further processing steps.
  */
 export function initWebhook(
+    server: Server,
+    app: express.Express,
     handleRequest: (
         request: FacebookMessaging,
         messengerUserId: string,
@@ -44,10 +46,7 @@ export function initWebhook(
         process.exit(1);
     }
 
-    const app = express().use(bodyParser.json());
-    app.use(bodyParser.raw());
-
-    app.listen(PORT, () =>
+    server.listen(PORT, () =>
         logger.verbose(
             `${LOG_MESSAGES.chat.facebook}
             ${LOG_MESSAGES.chat.webhookListening} ${PORT}!`,

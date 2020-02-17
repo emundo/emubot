@@ -17,4 +17,11 @@ export type SlackMessage = {
     ok: boolean;
 
     subtype?: string;
+
+    event: {
+        type: 'message';
+        text: string;
+        event_ts: string;
+        user: string;
+    };
 };
