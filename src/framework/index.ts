@@ -4,7 +4,7 @@
 
 export { setConfig, getConfig } from './core/getConfig';
 export { adapter } from './core/getAdapter';
-export { initCore } from './core/core';
+export { initCore, deinitCore } from './core/core';
 
 export { logger } from './logger';
 export { setLogMessages, LOG_MESSAGES } from './constants/logMessages';

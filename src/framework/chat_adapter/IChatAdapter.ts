@@ -24,6 +24,11 @@ export interface ChatAdapter {
     ): Promise<void>;
 
     /**
+     * Shuts down the chat adapter. This method is used by the core in order to close the Botframework.
+     */
+    deinit(): Promise<void>;
+
+    /**
      * Required to send a message to the client outside of the usual workflow.
      *
      * The way this is implementated can vary. You could e.g. use a websocket or, if allowed by the messaging platform,

@@ -110,7 +110,7 @@ async function main(): Promise<void> {
     await sendHello();
 
     stdin.on('data', async (data: Buffer) => {
-        await sendMessage(data.slice(0, data.length - 1).toString());
+        await sendMessage(data.slice().toString());
         prompt();
     });
 }

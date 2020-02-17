@@ -1,4 +1,3 @@
-import { createEventAdapter } from '@slack/events-api';
 import { post, OptionsWithUrl } from 'request-promise-native';
 import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import { SlackRequest, SlackMessage } from '../model/SlackRequest';
@@ -14,6 +13,7 @@ import {
 } from '../model/SlackResponse';
 import { SlackConfig } from '../slackConfig';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
+import { mapSerialized } from '../../utils';
 
 export async function openChannel(userId: string): Promise<string> {
     const config: OptionsWithUrl = createRequestConfiguration(
@@ -45,37 +45,29 @@ export async function sendTextResponse(response: SlackResponse): Promise<void> {
         'chat.postMessage',
     );
 
-    post(config).catch(e => logger.error(e));
+    await post(config).catch(e => logger.error(e));
 }
 
 export async function initWebhook(
-    handleRequest: (
+    slackEvents: SlackEventAdapter,
+    _handleRequest: (
         request: SlackRequest,
     ) => Promise<Response<ChatAdapterResponse[]>>,
 ): Promise<void> {
-    const SLACK_SIGNING_SECRET: string = getConfig().platform.chat.appSecret;
     const PORT: number = getConfig().server.port;
 
-    const slackEvents: SlackEventAdapter = createEventAdapter(
-        SLACK_SIGNING_SECRET,
-    );
-
     await slackEvents.start(PORT);
-    logger.verbose(
-        `${LOG_MESSAGES.chat.slack}
-        ${LOG_MESSAGES.chat.webhookListening} ${PORT}!`,
-    );
+    logger.info(`Server started on port ${PORT}!`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (slackEvents as any).on('message', async (event: SlackMessage) => {
+        handleMessage(event, _handleRequest);
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (slackEvents as any).on('error', async (event: string) => {
         logger.debug(LOG_MESSAGES.chat.noPageSubscriptionEvent);
         logger.error(logger.error(event));
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (slackEvents as any).on('message', async (event: SlackMessage) =>
-        handleMessage(event, handleRequest),
-    );
 }
 
 async function handleMessage(
@@ -103,10 +95,7 @@ async function handleMessage(
         const resps = responses.payload.map(r =>
             convertToSlackResponse(r, event.user, event.channel),
         );
-
-        resps.forEach(async (r: SlackResponse) => {
-            await sendTextResponse(r);
-        });
+        mapSerialized(resps, async (r: SlackResponse) => sendTextResponse(r));
         openChannel(event.user);
     }
 }
