@@ -25,7 +25,7 @@ const DEFAULT_LOG_MESSAGES = {
         webhookListening: 'Webhook is listening on port',
         webhookNotVerfied:
             'Unable to verify Webhook. Unauthorized Access: Verify tokens not present',
-        webhookVerified: 'Webhook is verfified.',
+        webhookVerified: 'Webhook is verified.',
         websocketError: 'Message could not be sent to user (contactClient).',
         unknownClient: 'Tried to contact unknown client: ',
     },

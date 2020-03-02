@@ -23,7 +23,7 @@ function createRequestConfiguration(textRequest: string): OptionsWithUrl {
     };
 
     return {
-        body: body,
+        body,
         headers: {
             'Content-Type': 'application/json',
         },
@@ -43,7 +43,7 @@ async function sendHello(): Promise<void> {
     };
 
     const config: OptionsWithUrl = {
-        body: body,
+        body,
         headers: {
             'Content-Type': 'application/json',
         },
@@ -71,7 +71,7 @@ async function main(): Promise<void> {
         `CLI test client for the emubot framework.`,
     );
     const parser = new ArgumentParser({
-        description: description,
+        description,
         addHelp: true,
     });
 

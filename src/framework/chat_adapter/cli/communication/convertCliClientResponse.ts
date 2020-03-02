@@ -15,21 +15,17 @@ import { MESSAGES } from '../../../constants/messages';
 export function convertIntoCliClientResponse(
     response: ChatAdapterResponse,
 ): CliClientResponse {
-    switch (response.Message.type) {
-        case 'text':
-            return {
-                text: response.Message.text,
-                id: response.messengerUserId,
-            };
-
-        default:
-            logger.error(
-                `${LOG_MESSAGES.chat.responseTypeNotImplemented} ${response}`,
-            );
-
-            return {
-                text: MESSAGES.error.handlingBetweenCoreAndChatAdapter,
-                id: response.messengerUserId,
-            };
+    if (response.Message.type === 'text') {
+        return {
+            text: response.Message.text,
+            id: response.messengerUserId,
+        };
     }
+
+    logger.error(`${LOG_MESSAGES.chat.responseTypeNotImplemented} ${response}`);
+
+    return {
+        text: MESSAGES.error.handlingBetweenCoreAndChatAdapter,
+        id: response.messengerUserId,
+    };
 }

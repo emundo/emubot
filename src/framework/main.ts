@@ -26,6 +26,10 @@
  * setMessages(yourNewMessagesFile);
  */
 
+import { config } from './configuration/configFacebookDf2';
 import { initCore } from './core/core';
+import { setConfig } from './core/getConfig';
+
+setConfig(config);
 
 initCore();

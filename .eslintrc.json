@@ -70,6 +70,15 @@
         ],
         "newline-before-return": "error",
         "lines-between-class-members": "error",
-        "max-len": ["error", { "comments": 125, "code": 120 }]
+        "max-len": [
+            "error",
+            {
+                "comments": 125,
+                "code": 120,
+                "ignoreTrailingComments": true,
+                "ignoreUrls": true,
+                "ignoreStrings": true
+            }
+        ]
     }
 }
