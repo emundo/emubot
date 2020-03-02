@@ -3,6 +3,7 @@ import {
     ChatAdapterInitialRequest,
 } from '../../ChatAdapterRequest';
 import { CliClientRequest } from '../model/CliClientRequest';
+import { LOG_MESSAGES } from '../../../constants/logMessages';
 
 /**
  * This function is used to convert between the internal format and the format of the `CliClient`.
@@ -26,5 +27,7 @@ export function convertIntoChatAdapterRequest(
             return {
                 type: 'initial',
             } as ChatAdapterInitialRequest;
+        default:
+            throw Error(LOG_MESSAGES.unsupportedMessageType);
     }
 }

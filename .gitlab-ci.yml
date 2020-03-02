@@ -7,21 +7,28 @@ stages:
     - test
     - analysis
 
-cache:
+cache: &global_cache
     key: '$CI_COMMIT_REF_NAME'
-    untracked: true
     paths:
         - node_modules/
+        - dist/
+    policy: pull-push
 
 install:
     stage: install
     script:
         - npm ci --verbose
+    cache:
+        <<: *global_cache
+        policy: push
 
 check:
     stage: check
     script:
         - npm run lint
+    cache:
+        <<: *global_cache
+        policy: pull
 
 compile:
     stage: compile
@@ -33,26 +40,35 @@ compile:
 
 test:
     stage: test
-    script: npm run test
+    script:
+        - export test=True
+        - npm run test
+    cache:
+        <<: *global_cache
+        policy: pull
+
+.sonarqube-base:
+    stage: analysis
+    image: emundo/docker-compose-openjdk-node-sonarqube-scanner:latest
+    retry:
+        max: 2
+        when: runner_system_failure
+    allow_failure: true
+    dependencies:
+        - compile
 
 sonar-job-master:
-    stage: analysis
-    image: emundo/docker-compose-openjdk-node-sonarqube-scanner:latest
+    extends:
+        - .sonarqube-base
     script:
         - npm run sonar-scanner
-    allow_failure: true
     only:
         - master
-    dependencies:
-        - compile
 
 sonar-preview:
-    stage: analysis
-    image: emundo/docker-compose-openjdk-node-sonarqube-scanner:latest
+    extends:
+        - .sonarqube-base
     script:
         - node_modules/sonarqube-scanner/dist/bin/sonar-scanner -Dsonar.analysis.mode=preview -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
-    allow_failure: true
     only:
         - merge_requests
-    dependencies:
-        - compile

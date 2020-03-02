@@ -13,6 +13,8 @@ const DEFAULT_MESSAGES = {
     },
     noAgent:
         'I currently do not use an agent that allows me to understand natural language.',
+    noConfigurationFileProvided:
+        'Welcome to emubot! If you want to test the core functionality you will need to provide a valid configuration file!',
 };
 
 export let MESSAGES = DEFAULT_MESSAGES;

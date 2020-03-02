@@ -14,6 +14,9 @@ import * as lodash from 'lodash';
 import { getConfig } from '../../../core/getConfig';
 import { sendMultipleResponses } from './sendResponses';
 import { MESSAGES } from '../../../constants/messages';
+import { createHmac } from 'crypto';
+
+type ExtendedExpressRequest = express.Request & { rawBody: string };
 
 /**
  * Initializes the webhook and awaits new messages. If a message is received, `handleRequest` is triggered, which converts
@@ -30,9 +33,11 @@ export function initWebhook(
     const WEBHOOK_PATH = getConfig().platform.chat.webhook_path;
     const WEBHOOK_VERIFICATION = getConfig().platform.chat.webhook_path;
     const PORT = getConfig().server.port;
+
     // Check if all required tokens are set.
     const facebookConfig = (getConfig().platform
         .chat as unknown) as FacebookChatConfig;
+
     if (!facebookConfig.appSecret) {
         logger.error(LOG_MESSAGES.chat.missingAppSecret);
         process.exit(1);
@@ -66,7 +71,12 @@ export function initWebhook(
      */
     app.post(WEBHOOK_PATH, (req, res) => {
         logger.debug(LOG_MESSAGES.chat.incomingPostRequest);
-        // TODO: Verify payload using the Facebook AppSecret
+        const verified: boolean = validatePayload(
+            req as ExtendedExpressRequest,
+        );
+        if (!verified && !process.env.test) {
+            res.sendStatus(400);
+        }
 
         const body: FacebookPostRequest = req.body;
         // Checks if this is an event from a page subscription
@@ -88,6 +98,17 @@ export function initWebhook(
             res.sendStatus(404);
         }
     });
+}
+
+/**
+ * Validate message according to https://developers.facebook.com/docs/messenger-platform/webhook/#security.
+ * Used to verify the integrity and origin of the incoming message.
+ */
+function validatePayload(req: ExtendedExpressRequest): boolean {
+    const hmac = createHmac('sha1', getConfig().platform.chat.appSecret);
+    hmac.update(req.rawBody);
+
+    return req.headers['x-hub-signature'] === `sha1=${hmac.digest('hex')}`;
 }
 
 /**

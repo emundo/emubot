@@ -33,7 +33,7 @@ export function toNlpTextResponse(
     responseArray: DetectIntentResponse[],
     agentName: string,
 ): NlpResponse {
-    if (responseArray[1] !== undefined) {
+    if (!!responseArray[1]) {
         logger.error(
             `${LOG_MESSAGES.nlp.moreThanOneResponse}${JSON.stringify(
                 responseArray[1],

@@ -4,6 +4,7 @@ import {
     ChatAdapterTextMessage,
 } from '../chat_adapter/ChatAdapterResponse';
 import { Response } from './model/Response';
+import { MESSAGES } from '../constants/messages';
 
 /**
  * Default configuration which is set in the absence of any other configuration. In this case the framework will
@@ -16,8 +17,7 @@ export async function dummyHandleMessage(
 ): Promise<Response<ChatAdapterResponse[]>> {
     const text: ChatAdapterTextMessage = {
         type: 'text',
-        text: `Welcome to emubot! If you want to test the core functionality you will
-               need to provide a valid configuration file!`,
+        text: MESSAGES.noConfigurationFileProvided,
     };
     const resp: ChatAdapterResponse = {
         Message: text,
@@ -28,6 +28,6 @@ export async function dummyHandleMessage(
         payload: [resp],
         kind: 'Response',
         statusCode: 200,
-        userId: userId,
+        userId,
     };
 }
