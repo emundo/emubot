@@ -30,6 +30,7 @@ export async function sendTextRequest(
         );
         getAllContexts(agentName, textRequest.internalUserId);
         const resp = await sessionClient.detectIntent(config);
+        logger.debug(`DialogflowV2 response: ${JSON.stringify(resp)}`);
 
         return toNlpTextResponse(resp, agentName);
     } catch (error) {

@@ -77,7 +77,7 @@ export function toNlpTextResponse(
                           : response.webhookStatus.code === 0,
               } as NlpStatus);
 
-    return {
+    const transformedNlpResponse: NlpResponse = {
         agentName,
         status,
         textRequestResult: {
@@ -92,6 +92,14 @@ export function toNlpTextResponse(
             score: result.intentDetectionConfidence,
         },
     };
+
+    logger.debug(
+        `Transformed DialogflowV2 response: ${JSON.stringify(
+            transformedNlpResponse,
+        )}`,
+    );
+
+    return transformedNlpResponse;
 }
 
 /**

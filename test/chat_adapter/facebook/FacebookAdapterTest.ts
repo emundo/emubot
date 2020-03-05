@@ -36,7 +36,7 @@ const messageMap: Map<string, string> = new Map();
 const users: Set<string> = new Set();
 let server: Server;
 
-// Generate pseudo users on the side of the mocked Facebook Server
+// Generate pseudo users for mocked Facebook server
 function generateUserId(): string {
     const userId: string = generateId();
     users.add(userId);
@@ -168,7 +168,7 @@ describe('Facebook adapter', () => {
         });
     });
     describe('init()/deinit()', () => {
-        it('Deinit should correctly stop the chat adapter internal server', async () => {
+        it('Deinit should correctly stop the chat adapter internal server.', async () => {
             await initCore();
             await deinitCore().should.be.fulfilled;
             await initCore();
@@ -180,7 +180,7 @@ describe('Facebook adapter', () => {
             await initCore();
         });
 
-        it('Contacting Botframework with valid userMessage should result in valid response', async () => {
+        it('Contacting emubot with valid user message should result in valid response.', async () => {
             const userId = generateUserId();
             const request: OptionsWithUrl = createRequestConfiguration(
                 'hey',

@@ -4,13 +4,10 @@ import { post, OptionsWithUrl } from 'request-promise-native';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { createHmac } from 'crypto';
+
 import { openChannel } from '../../../src/framework/chat_adapter/slack/communication/webhook';
 import { SlackAdapter } from '../../../src/framework/chat_adapter/slack/SlackAdapter';
 import { generateId } from '../../../src//framework/core/utils/generateId';
-import {
-    createSlackServer,
-    createSlackAdapter,
-} from './_mocks/_SlackTestServer';
 import {
     ChatAdapterTextMessage,
     ChatAdapterResponse,
@@ -24,19 +21,25 @@ import {
 } from '../../../src/framework/configuration/configTypes';
 import { interceptorConfig } from '../../../src/framework/configuration/interceptorConfig';
 import { SlackMessage } from '../../../src/framework/chat_adapter/slack/model/SlackRequest';
+
 import {
     DummyNlpAdapter,
     nlpMessageMap,
     platformDummyAdapter,
 } from '../../_mocks/DummyNlpAdapter';
+import {
+    createSlackServer,
+    createSlackAdapter,
+} from './_mocks/_SlackTestServer';
 
 chai.use(chaiAsPromised);
 
-const messageMap: Map<string, string[]> = new Map();
+// The users-Set is used as a mocked database containing known users.
 const users: Set<string> = new Set();
+const messageMap: Map<string, string[]> = new Map();
 let server: Server;
 
-// Generate pseudo users on the side of the mocked Slack Server
+// Generate pseudo users on mocked Slack server.
 function generateUserId(): string {
     const userId: string = generateId();
     users.add(userId);
@@ -86,13 +89,13 @@ describe('Slack', () => {
     });
 
     describe('openChannel()', () => {
-        it('Valid open channel request should respond with a channel id', async () => {
+        it('Valid openChannel() request should respond with a channel id.', async () => {
             const userId = generateUserId();
             const channel: string = await openChannel(userId);
             should().equal(channel, 'X');
         });
 
-        it('Open channel request should return an error if userId is not known to the server', async () => {
+        it('openChannel() request should return an error if userId is not known by the server.', async () => {
             const channel: string = await openChannel('XXXX');
             should().equal(channel, '');
         });
@@ -188,7 +191,7 @@ describe('Slack', () => {
     }
 
     describe('init()/deinit()', () => {
-        it('Deinit should correctly stop the chat adapter internal server', async () => {
+        it('Deinit should correctly stop the chat adapter internal server.', async () => {
             await initCore();
             await deinitCore().should.be.fulfilled;
             await initCore();
@@ -201,7 +204,7 @@ describe('Slack', () => {
             await initCore();
         });
 
-        it('Contacting Botframework with valid userMessage should result in valid response', async () => {
+        it('Contacting emubot with a valid userMessage should result in a valid response.', async () => {
             const userId = generateUserId();
             const channel = generateId();
             const request: OptionsWithUrl = createRequestConfiguration(
@@ -215,7 +218,7 @@ describe('Slack', () => {
             should().exist(messageMap.has(userId));
         });
 
-        it('Multiple responses should be retrieved and then posted to the server in the correct order', async () => {
+        it('Multiple responses should be retrieved and then posted to the server in the correct order.', async () => {
             const userId = generateUserId();
             const channel = generateId();
             const request: OptionsWithUrl = createRequestConfiguration(
@@ -224,7 +227,7 @@ describe('Slack', () => {
                 channel,
             );
             post(request);
-            await sleep(100); // Slack expects to have an answer after at most 2 seconds
+            await sleep(100); // Slack expects to have an answer after at most 2 seconds.
 
             it('Multiple (all) messages retrieved from server', async () => {
                 should().exist(messageMap.has(userId));
