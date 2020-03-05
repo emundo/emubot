@@ -2,6 +2,7 @@ import * as express from 'express';
 import * as http from 'http';
 import { json } from 'body-parser';
 import * as cors from 'cors';
+
 import { SlackAdapter } from '../../../../src/framework/chat_adapter/slack/SlackAdapter';
 import { generateId } from '../../../../src/framework/core/utils/generateId';
 import {

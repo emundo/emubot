@@ -41,7 +41,6 @@ compile:
 test:
     stage: test
     script:
-        - export test=True
         - npm run test
     cache:
         <<: *global_cache

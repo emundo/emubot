@@ -11,20 +11,20 @@ const DEFAULT_LOG_MESSAGES = {
         missingPageAccessToken: 'Missing page_access_token in config file.',
         missingVerifyToken: 'Missing verify_token in config file.',
         noPageSubscriptionEvent:
-            '404 Not Found- Event is not from a page subscription.',
+            '404 Not Found - Event is not from a page subscription.',
         noUrlProvided: 'No URL provided.',
         noWebsocketError: 'No websocket with the messengerUserID ',
         pageSubscriptionEvent: 'Page subscription event.',
-        payloadNotVerified: 'The sha1 signature could not be verified.',
+        payloadNotVerified: 'The SHA1 signature could not be verified.',
         responseTypeNotImplemented:
             'CustomChatAdapter: Not implemented response type: ',
         sendingMessageToUser: 'Sending message to user ',
         unableToSendResponse: 'Message could not be sent to user.',
         defaultConfiguration:
             'No configuration was set. Starting in default configuration.',
-        webhookListening: 'Webhook is listening on port',
+        webhookListening: 'Webhook is listening on port ',
         webhookNotVerfied:
-            'Unable to verify Webhook. Unauthorized Access: Verify tokens not present',
+            'Unable to verify webhook. Unauthorized access: Verify tokens not present',
         webhookVerified: 'Webhook is verified.',
         websocketError: 'Message could not be sent to user (contactClient).',
         unknownClient: 'Tried to contact unknown client: ',
@@ -45,7 +45,7 @@ const DEFAULT_LOG_MESSAGES = {
         scoreBelowThreshold: 'Score below threshold.',
         sendToNextAgent: 'Send request to next agent...',
         transformToChatAdapterResponseError:
-            'An error occured during the transformation of the NLPMessage to ChatAdapterResponse.',
+            'An error occured during the transformation of the NlpMessage to ChatAdapterResponse.',
         unsupportedButtonError: 'This button is not supported.',
         unsupportedCustomPayloadError: 'This payload is not supported.',
         couldNotStopCore: 'The core could not be stopped gracefully: ',
@@ -57,7 +57,7 @@ const DEFAULT_LOG_MESSAGES = {
         userNotFoundOrCreatable:
             'User not found and provided information is insufficient to create.',
     },
-    initializeLogging: 'Initialized Logger on level: ',
+    initializeLogging: 'Initialized logger on level: ',
     nlp: {
         adapter: {
             dialogflowAdapter: 'DialogflowAdapter: ',
@@ -70,7 +70,7 @@ const DEFAULT_LOG_MESSAGES = {
         deleteSelectedContexts: 'Error whilst deleting selected contexts: ',
         moreThanOneResponse:
             'Error: A miracle! More than one response returned. Examine me: ',
-        sendTextRequest: 'Error Occured in sendTextRequest: ',
+        sendTextRequest: 'Error occured in sendTextRequest: ',
         setContexts: 'Added the following contexts: ',
         toNlpMessage: 'Unknown message type.',
         unableToAddContexts:

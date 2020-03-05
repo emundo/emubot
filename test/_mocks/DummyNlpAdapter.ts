@@ -43,7 +43,7 @@ export class DummyNlpAdapter implements NlpAdapter {
         } else {
             return {
                 success: false,
-                errorDetails: 'Unknown agent was selected',
+                errorDetails: 'Unknown agent was selected.',
                 errorType: 'UnknownAgentError',
             };
         }
@@ -72,7 +72,7 @@ export class DummyNlpAdapter implements NlpAdapter {
 
         return {
             success: false,
-            errorDetails: 'Unknown agent was selected',
+            errorDetails: 'Unknown agent was selected.',
             errorType: 'UnknownAgentError',
         };
     }
@@ -96,7 +96,7 @@ export class DummyNlpAdapter implements NlpAdapter {
 
         return {
             success: false,
-            errorDetails: 'Unknown agent was selected',
+            errorDetails: 'Unknown agent was selected.',
             errorType: 'UnknownAgentError',
         };
     }
@@ -109,7 +109,7 @@ export class DummyNlpAdapter implements NlpAdapter {
             return {
                 status: {
                     success: false,
-                    errorDetails: 'Unknown agent was selected',
+                    errorDetails: 'Unknown agent was selected.',
                     errorType: 'UnknownAgentError',
                 },
                 agentName,
@@ -207,7 +207,7 @@ export class DummyNlpAdapter implements NlpAdapter {
                 message: [
                     {
                         type: 'text',
-                        text: 'Sorry I did not understand this!!',
+                        text: 'Sorry, I did not understand this!',
                     },
                 ],
                 score: 0.1,
