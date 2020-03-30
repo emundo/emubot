@@ -36,6 +36,35 @@ You will receive a message telling you that you did not set up a NLP service yet
 If you want to deploy your bot to a messaging service such as Slack, you have to get the respective credentials (see [docs](https://emundo.github.io/emubot_doc/_build/html/index.html)) required to authenticate. Furthermore, you usually have to setup a server and communicate over https.
 A detailed setup will follow soon.
 
+
+### Feature List
+#### Chatadapter
+| Feature          | Facebook | Slack    | CLI Client |
+| -------- | -------- | -------- | -------- |
+| Authentication            | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark:   |
+| Verify payload            | :heavy_check_mark: | :heavy_check_mark: |:information_source: |
+| Text requests             | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark:   |
+| Image requests            | :heavy_check_mark: |  :x:               | :information_source:|
+| initial requests          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| isFromAdmin               | :heavy_check_mark: | :x:                | :information_source:|
+| undefined                 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| Text responses            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
+| URL button responses      | :heavy_check_mark: | :x:                | :information_source:|
+| Image responses           | :heavy_check_mark: | :x:                | :information_source:|
+| Image with title responses| :heavy_check_mark: | :x:                | :information_source:|
+| Quickreply                | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
+| Undefined                 | :heavy_check_mark: | :heavy_check_mark: | :information_source:|
+
+#### NLP adapter
+| Feature | DialogflowV2 | Snips | Rasa |
+| --------------------- | -------- | -------- | -------- |
+|sendTextRequest        |:heavy_check_mark:|:heavy_check_mark:  |:heavy_check_mark:  |
+|deleteSelectedContexts |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
+|deleteAllContexts      |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
+|postContexts           |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
+
+\* Snips and Rasa have no context system in the same fashion as Dialogflow. As such the methods are implemented to be used when an additional context system is added to those systems.
+
 ### Documentation
 Please consult the [docs](https://emundo.github.io/emubot_doc/_build/html/index.html) for further information regarding the setup, supported platforms, configuration files or details regarding the architecture.
 
