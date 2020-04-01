@@ -34,7 +34,7 @@ import {
 
 chai.use(chaiAsPromised);
 
-// The users-Set is used as a mocked database containing known users.
+// The set of users is used as a mocked database containing known users.
 const users: Set<string> = new Set();
 const messageMap: Map<string, string[]> = new Map();
 let server: Server;
