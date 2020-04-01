@@ -8,7 +8,7 @@ import { Interceptor } from './Interceptor';
  * and immediately returns it to the user without performing any additional operations and without changing the content
  * or any other external state.
  *
- * Using `MirrorInterceptor`s for all three interfaces is sufficient if you only want to let a user communicate with
+ * Using the `MirrorInterceptor` for all three interfaces is sufficient if you only want to let a user communicate with
  * your NLP Service. If you wish to perform additional actions (e.g. save information in a database or use information
  * from your CMS), you should implement your own interceptor. You can also have a look at some
  * [examples](https://github.com/emundo/emubot-extended-example/) of interceptors.

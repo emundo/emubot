@@ -5,9 +5,9 @@ Configuration file
 
 Central to your chatbot is its configuration file (which we will also call the *config*). In this file, you declare which messaging and NLP service you want to use and
 include all information required to authenticate with the distinctive services.
-You have to follow a predefined format specified in the `Typings <../../api_reference/miscellaneous/typealiases.html#Agent>`_ of the framework.
+You have to follow a predefined format specified in the `Typings <../api_reference/miscellaneous/typealiases.html#Agent>`_ of the framework.
 
-**Important: You always have to set the configuration before you can start the bot**.
+**Important: Without a valid configuration file the framework will start in the default configuration. In default configuration the framework provides a simple communication test which is accessible through the** `CLI client <chat_adapter/cli_client.html>`_.
 
 Basic structure
 ---------------
@@ -24,7 +24,7 @@ Exemplar Configuration File
 
 In this exemplar configuration file, we use the `Facebook <https://www.facebook.com/>`_ Messenger as our messaging platform and `Dialogflow <https://dialogflow.com/>`_ as
 our NLP Service. We have also provided some configuration files for various combinations of messaging platforms and NLP services
-`here <https://github.com/emundo/emubot/src/configuration/>`_. If you want to change the platforms, you can simply change the respective section (e.g. :code:`platform.chat`)
+`here <https://github.com/emundo/emubot/tree/master/src/framework/configuration>`_. If you want to change the platforms, you can simply change the respective section (e.g. :code:`platform.chat`)
 in the configuration file. More information on which variables you need for each platform and how you can get these variables can be found in the distinctive section
 (see below for more information).
 
@@ -139,8 +139,7 @@ Many chatbots are able to talk about different topics, e.g. perform smalltalk an
 (such as ordering a pizza). These topics can (and sometimes should) be separated into different *agents*. An agent
 encompasses all the information required to fulfull user requests and is often also referred to simply as *the bot*.
 But a bot as a whole can also include multiple agents, even if the user does not realize that different agents are
-handling his requests. The :code:`emubot` framework allows you to send requests to multiple agents:
-You might to have a higher priority on answering requests to order a pizza than replying to smalltalk.
+handling his requests. The :code:`emubot` framework allows you to send requests to multiple agents.
 
 Each of your agents has an :code:`executionIndex`. The lower the index, the earlier a request will be sent to this agent.
 The NLP service will then return a score between 0 and 1: If it is 100% sure that it can answer the query correctly,

@@ -54,7 +54,7 @@ is up and running on the correct URL.
 
 Exemplar Slack Config
 ------------------------
-To start the Botframework with the Slack adapter you will need to provide a
+To start :code:`emubot` with the Slack adapter you will need to provide a
 valid platform configuration file. Assuming you have already setup a NLP
 agent (see :ref:`exemplar_df_config`), the configuration should look
 like this:
@@ -72,7 +72,7 @@ like this:
     };
 
 After you have saved the configuration file you can simply compile the program
-(using `npm run tsc`) and run the bot with :code:`npm run start`.
+(using :code:`npm run tsc`) and run the bot with :code:`npm run start`.
 
 Supported Features
 ------------------

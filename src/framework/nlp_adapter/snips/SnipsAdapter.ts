@@ -12,33 +12,33 @@ import { postContexts } from '../communication/postContexts';
  * Adapter for the [Snips NLU](https://snips-nlu.readthedocs.io/en/latest/) framework.
  *
  * Given a phrase such as
- * ```
- *      What will the weather be like in paris at 9pm?
- * ```
+  ```
+       What will the weather be like in paris at 9pm?
+  ```
  * Snips NLU will parse the query and answer with a result of the form:
- * ```
- * {
- * "intent": {
- *    "intentName": "searchWeatherForecast",
- *    "probability": 0.95
- * },
- * "slots": [
- *    {
- *        "value": "paris",
- *        "entity": "locality",
- *        "slotName": "forecastLocality"
- *    },
- *    {
- *        "value": {
- *        "kind": "InstantTime",
- *        "value": "2018-02-08 20:00:00 +00:00"
- *        },
- *        "entity": "snips/datetime",
- *        "slotName": "forecastStartDatetime"
- *    }
- *  ]
- * }
- * ```
+  ```
+  {
+  "intent": {
+     "intentName": "searchWeatherForecast",
+     "probability": 0.95
+  },
+  "slots": [
+     {
+         "value": "paris",
+         "entity": "locality",
+         "slotName": "forecastLocality"
+     },
+     {
+         "value": {
+         "kind": "InstantTime",
+         "value": "2018-02-08 20:00:00 +00:00"
+         },
+         "entity": "snips/datetime",
+         "slotName": "forecastStartDatetime"
+     }
+   ]
+  }
+  ```
  * If you want emubot to handle the messages which should be supplied to the user, you should add a `messages`
  * field into the parsed result. You can also add a `contexts` field if desired. The request to the Snips webhook
  * will also include an internalUserID which can be used to differentiate between users.

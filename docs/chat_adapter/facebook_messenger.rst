@@ -39,7 +39,7 @@ On your server: Make sure to redirect the traffic sent to `https://www.url_of_yo
 running on. Using Docker you could for example use a proxy, if you use an Apache Webserver, you might want to add a rewrite rule to your
 ``~/html/.htaccess``.
 
-Important: You need to use https, i.e. have a valid TLS/SSL certificate configured. It is not possible to use self-signed certificates
+**Important**: You need to use https, i.e. have a valid TLS/SSL certificate configured. It is not possible to use self-signed certificates.
 
 The running application is required to verify the webhook and you can not continue without setting the verify token! To run the application, you
 have to set all of the tokens you just got, put the into the configuration file and start the bot.
@@ -76,7 +76,7 @@ update the API version, depending on the Graph API version you use.
                 nlp {
                     ....
 
-Compile the code using tsc and run :code:`npm run start`.
+Compile the code using :code:`tsc` and run :code:`npm run start`.
 
 Further Information Regarding the Setup
 ---------------------------------------

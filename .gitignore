@@ -9,6 +9,7 @@ src/framework/configuration_internal/
 docs/setup/
 .vscode/
 .scannerwork/
+*.swp
 
 # Created by https://www.gitignore.io/api/node,linux,macos,visualstudiocode
 

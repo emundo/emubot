@@ -8,7 +8,7 @@ The general structure of our architecture can be seen here:
 
 There are three distinctive interfaces that allow you to interact with the framework. We call these interfaces the "Chat to Core",
 "Nlp to Nlp" and "Nlp to Core" interceptor and explain possible use of each interface below. If you do not wish to perform any actions, you can simply
-use a :code:`MirrorInterface` which is already part of our base framework and is used in our exemplar repositories. At the interceptor you can
+use a :code:`MirrorInterceptor` which is already part of our base framework and is used in our exemplar repositories. At the interceptor you can
 perform any action (like adding or removing data from the incoming query), as long as you  return the same format, wrapped in a :code:`Response`.
 Using the :code:`Response` wrapper, you can...
 
@@ -53,12 +53,12 @@ An exemplar implementation can be found in our `extended example <https://github
 Nlp to Nlp
 -----------
 This second interceptor is especially of relevance if you utilize multiple agents. In the section about :ref:`custom_chat_adapter`, we explain the default workflow.
-This means, that a message is passed to another agent if it doesnt exceed a minimal score or if a fallback intent occurs.
+This means, that a message is passed to another agent if it does not exceed a minimal score or if a fallback intent occurs.
 
-Using the Nlp to Nlp interface, you can further introduce advanced rules set by yourself:
+Using the Nlp to Nlp interface, you can further introduce advanced rule sets by yourself:
 Sometimes you want to return some fallback intent, ignore the minimal score or delete contexts set by an agent whose message you do not want to send to the user.
 
-:code:`nlpToCore` expects an incoming :code:`NlpResponse` and returns a :code:`Response<NlpResponse>`.
+:code:`nlpToNlp` expects an incoming :code:`NlpResponse` and returns a :code:`Response<NlpResponse>`.
 
 .. _nlpTocore:
 
@@ -69,8 +69,9 @@ After determining the intent (and possibly receiving a static response), you can
 purposes:
 
 You might want to
+
 1. manipulate the message (e.g. use parameters retrieved from the NLU platform for a database request, used to assemble a new answer),
-2. begin some event (e.g. send message to the client in5x minutes),
+2. begin some event (e.g. send message to the client after some time),
 3. save/retrieve data to/from a service (e.g. save contexts in a database), or
 4. map the pseudonymized user ID to the user ID from the messenger for further processing.
 
