@@ -29,11 +29,15 @@ export function createResponse<T>(
     payload: T,
     statusCode: number,
     userId: string,
+    interruptProcessing = false,
+    action?: string,
 ): Response<T> {
     return {
         kind: 'Response',
         payload,
         statusCode,
         userId,
+        interruptProcessing,
+        action,
     };
 }

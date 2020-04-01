@@ -1,5 +1,8 @@
 import { DetectIntentResponse } from 'dialogflow';
-import winston = require('winston');
+import * as winston from 'winston';
+import * as express from 'express';
+import * as http from 'http';
+import SlackEventAdapter from '@slack/events-api/dist/adapter';
 
 /// <reference types="typescript" />
 /// <reference types="node" />
@@ -357,6 +360,7 @@ export type ChatAdapterCustomPayloadQuickReplyMessage = {
         [key: string]: string;
     };
 };
+
 /**
  * Generic response type that will be returned from our interceptors.
  * A `Response` either returns a payload and additional information that can be used in the next processing steps
@@ -372,7 +376,6 @@ export type Response<T> =
           action?: string;
       }
     | NoResponse;
-
 /**
  * If `NoResponse` is returned from an interceptor the user does not receive a visible message.
  */
@@ -402,6 +405,10 @@ export interface ChatAdapter {
             messengerUserId: string,
         ) => Promise<Response<ChatAdapterResponse[]>>,
     ): Promise<void>;
+    /**
+     * Shuts down the chat adapter. This method is used by the core in order to close the Botframework.
+     */
+    deinit(): Promise<void>;
     /**
      * Required to send a message to the client outside of the usual workflow.
      *
@@ -484,7 +491,7 @@ export interface Interceptor<T, U> {
  * Used to specify the type of a class constructor (NLP or Chat)
  * */
 export interface ClassConstructor<T> {
-    new (data?: T): T;
+    new (): T;
 }
 /**
  * A (chat)bot can be deployed on a messaging service. The bot can consist of multiple so called _agents_.
@@ -557,7 +564,7 @@ export type Config<
 > = {
     interceptors: InterceptorConfig;
     platform: {
-        chat: ChatConfig<ChatAdapter>;
+        chat: ChatConfig<SpecificChatAdapter>;
         nlp: NlpConfig<SpecificNlpAdapter>;
     };
     server: ServerConfig;
@@ -578,8 +585,6 @@ export function getConfig(): Config<ChatAdapter, NlpAdapter>;
  */
 export function setConfig(userConfig: Config<ChatAdapter, NlpAdapter>): void;
 
-export function setPort(port: number): void;
-
 export type Adapter = {
     nlp: NlpAdapter;
     chat: ChatAdapter;
@@ -589,11 +594,45 @@ export type Adapter = {
  */
 export const adapter: Adapter;
 
+export const DEFAULT_MESSAGES: {
+    error: {
+        general: string;
+        handlingBetweenCoreAndChatAdapter: string;
+        messageHandlingInCore: string;
+        unsupportedAttachment: string;
+        unsupportedFormat: string;
+    };
+    noAgent: string;
+    noConfigurationFileProvided: string;
+};
+export let MESSAGES: {
+    error: {
+        general: string;
+        handlingBetweenCoreAndChatAdapter: string;
+        messageHandlingInCore: string;
+        unsupportedAttachment: string;
+        unsupportedFormat: string;
+    };
+    noAgent: string;
+    noConfigurationFileProvided: string;
+};
+export function setMessages(messages: typeof DEFAULT_MESSAGES): void;
+
+/**
+ * Default configuration which is set in the absence of any other configuration. In this case the framework will
+ * not run the message through the core pipeline since that would require a valid NLP configuration. The framework
+ * will start with the CLI adapter.
+ */
+export function dummyHandleMessage(
+    _: ChatAdapterRequest,
+    userId: string,
+): Promise<Response<ChatAdapterResponse[]>>;
 export const DEFAULT_LOG_MESSAGES: {
     chat: {
         convertToUrlButton: string;
-        customChat: string;
+        cli: string;
         facebook: string;
+        slack: string;
         incomingGetRequest: string;
         incomingPostRequest: string;
         initWebhook: string;
@@ -608,10 +647,12 @@ export const DEFAULT_LOG_MESSAGES: {
         responseTypeNotImplemented: string;
         sendingMessageToUser: string;
         unableToSendResponse: string;
+        defaultConfiguration: string;
         webhookListening: string;
         webhookNotVerfied: string;
         webhookVerified: string;
         websocketError: string;
+        unknownClient: string;
     };
     connections: {
         component: {
@@ -630,6 +671,7 @@ export const DEFAULT_LOG_MESSAGES: {
         transformToChatAdapterResponseError: string;
         unsupportedButtonError: string;
         unsupportedCustomPayloadError: string;
+        couldNotStopCore: string;
     };
     database: {
         connectionUndefined: string;
@@ -645,6 +687,7 @@ export const DEFAULT_LOG_MESSAGES: {
         };
         contextCreated: string;
         deleteAllContexts: string;
+        deleteSelectedContexts: string;
         moreThanOneResponse: string;
         sendTextRequest: string;
         setContexts: string;
@@ -661,19 +704,19 @@ export const DEFAULT_LOG_MESSAGES: {
         data: string;
         score: string;
     };
-    warnings: {
-        no_agents: string;
-        hash_mismatch: string;
-    };
     textHandlingInit: string;
     unsupportedMessageType: string;
+    warnings: {
+        hash_mismatch: string;
+        no_agents: string;
+    };
 };
-
 export let LOG_MESSAGES: {
     chat: {
         convertToUrlButton: string;
-        customChat: string;
+        cli: string;
         facebook: string;
+        slack: string;
         incomingGetRequest: string;
         incomingPostRequest: string;
         initWebhook: string;
@@ -688,10 +731,12 @@ export let LOG_MESSAGES: {
         responseTypeNotImplemented: string;
         sendingMessageToUser: string;
         unableToSendResponse: string;
+        defaultConfiguration: string;
         webhookListening: string;
         webhookNotVerfied: string;
         webhookVerified: string;
         websocketError: string;
+        unknownClient: string;
     };
     connections: {
         component: {
@@ -710,6 +755,7 @@ export let LOG_MESSAGES: {
         transformToChatAdapterResponseError: string;
         unsupportedButtonError: string;
         unsupportedCustomPayloadError: string;
+        couldNotStopCore: string;
     };
     database: {
         connectionUndefined: string;
@@ -753,28 +799,101 @@ export function setLogMessages(messages: typeof DEFAULT_LOG_MESSAGES): void;
 
 export const logger: winston.Logger;
 
-export const DEFAULT_MESSAGES: {
-    error: {
-        general: string;
-        handlingBetweenCoreAndChatAdapter: string;
-        messageHandlingInCore: string;
-        unsupportedAttachment: string;
-        unsupportedFormat: string;
-    };
-    noAgent: string;
+export type CliClientRequest = CliClientInitialMessage | CliClientMessage;
+export type CliClientMessage = {
+    type: 'message';
+    text: string;
+    id: string;
 };
+export type CliClientInitialMessage = {
+    type: 'initial';
+    id: string;
+};
+export type CliClientResponse = {
+    readonly text: string;
+    readonly id: string;
+};
+/**
+ * This function is used to convert between the internal format and the format of the `CliClient`.
+ *
+ * @param response Response in the generalized framework format.
+ * @returns Reponse in the `CliClient` format.
+ *
+ */
+export function convertIntoCliClientResponse(
+    response: ChatAdapterResponse,
+): CliClientResponse;
+/**
+ * This function is used to setup a webhook that is compatible to the `CliClient`.
+ * GET /WEBHOOK_PATH/hello: Used to tell the framework about the connection of a new user. This route generates a new
+ *                          ID for that user and answers the user with the id.
+ * POST /WEBHOOK_PATH     : This route handles text requests. Requests on this route are run through the processing
+ *                          pipeline of the frameowrk and will end be sent to the NLP service through the `NLPAdapter`
+ *                          depending on the type of message and configuration of the `Interceptor`s.
+ *
+ * @param handleRequest function that describes how the webhook should handle an incoming request.
+ */
+export function initWebhook(
+    server: http.Server,
+    app: express.Express,
+    handleRequest: (
+        request: CliClientRequest,
+    ) => Promise<Response<ChatAdapterResponse[]>>,
+): void;
 
-export let MESSAGES: {
-    error: {
-        general: string;
-        handlingBetweenCoreAndChatAdapter: string;
-        messageHandlingInCore: string;
-        unsupportedAttachment: string;
-        unsupportedFormat: string;
-    };
-    noAgent: string;
-};
-export function setMessages(messages: typeof DEFAULT_MESSAGES): void;
+export function initWebhook(
+    slackEvents: SlackEventAdapter,
+    _handleRequest: (
+        request: SlackRequest,
+    ) => Promise<Response<ChatAdapterResponse[]>>,
+): Promise<void>;
+
+export function initWebhook(
+    server: http.Server,
+    app: express.Express,
+    handleRequest: (
+        request: FacebookMessaging,
+        messengerUserId: string,
+    ) => Promise<Response<ChatAdapterResponse[]>>,
+): void;
+
+/**
+ * This function is used to convert between the internal format and the format of the `CliClient`.
+ *
+ * @param message Messages in the format of the `CliClient`.
+ * @returns Message in the generalized framework format.
+ */
+export function convertIntoChatAdapterRequest(
+    message: CliClientRequest,
+): ChatAdapterRequest;
+export function convertIntoChatAdapterRequest(
+    request: SlackRequest,
+): ChatAdapterRequest;
+/**
+ * For more information regarding the setup:
+ * see [CLI setup]{@link ../../_build/html/chat_adapter/cli_messenger.html}.
+ * For more information regarding the functionality: see `ChatAdapter`.
+ *
+ * @implements {ChatAdapter}
+ */
+export class CliAdapter implements ChatAdapter {
+    private readonly server;
+
+    private readonly app;
+
+    constructor();
+
+    init(
+        handleRequest: (
+            message: ChatAdapterRequest,
+            messengerUserId: string,
+        ) => Promise<Response<ChatAdapterResponse[]>>,
+    ): Promise<void>;
+
+    deinit(): Promise<void>;
+
+    contactClient(_: ChatAdapterResponse): Promise<void>;
+}
 
 /**
  * Transforms multiple generic NLP messages into an array of generic ChatAdapterResponses.
@@ -810,7 +929,6 @@ type AgentWithName = Agent & {
  * Execution index: increasing index means decreasing importance. It is set in the config.
  */
 export function getOrderedAgents(): AgentWithName[];
-
 /**
  * More information regarding the usage of the interceptors can be found at
  * [Interceptor]{@link ../interfaces/Interceptor.html}
@@ -826,6 +944,7 @@ type NlpResponseData = {
     agentName: string;
     response: NlpResponse;
 };
+
 /**
  * Tries to find the best matching answer for an incoming request by the user. The message is sent to every
  * agent sorted by descending agent importance until a response with a high-enough score is returned. The
@@ -866,6 +985,8 @@ export function createResponse<T>(
     payload: T,
     statusCode: number,
     userId: string,
+    interruptProcessing?: boolean,
+    action?: string,
 ): Response<T>;
 
 /**
@@ -881,12 +1002,8 @@ export function handleReceivedMessageInCore(
     messengerUserId: string,
 ): Promise<Response<ChatAdapterResponse[]>>;
 
-/**
- * Entry point into the framework, starts the server and the message handling.
- * IMPORTANT: Make sure that you have already set the config (see `../main.ts`)
- * More information can be found at [here]{@link ../../_build/html/configuration.html}.
- */
 export function initCore(): Promise<void>;
+export function deinitCore(): Promise<void>;
 
 /**
  * Transforms a message string and the `messengerUserId` into a `ChatAdapterResponse`.
@@ -945,58 +1062,43 @@ export function convertStringArrayToNlpContexts(
 ): NlpContext[] | undefined;
 
 /**
- * Transforms the DialogflowV2-Response into the generalized format used in this framework.
+ * Deletes all contexts which are currently active for a certain agent. The context system is based on the
+ * system used by Dialogflow. If you are using NLP backend that does not use a system like that you can just
+ * ignore these requests. The requests will delete on the route `/deleteAllContexts` with the following JSON:
+ * ```
+ *  {
+ *      user: string
+ *  }
+ * ```
  *
- * @param responseArray Message retrieved from the DialogflowV2 endpoint. Unclear why it
- *                      returns an array (contradicting documentation)
- * @param agentName Name of the agent the query was sent to. Specified as a key in your `config.ts`.
+ * @param internalUserId The pseudonymized identifier which is used to define a session for a specific agent.
+ * @param agentName Used to define the agent whose contexts shall be deleted.
+ *
+ * @returns An `NlpStatus`, signaling whether the request was successful.
  */
-export function toNlpTextResponse(
-    responseArray: DetectIntentResponse[],
+export function deleteAllContexts(
+    internalUserId: string,
     agentName: string,
-): NlpResponse;
-export function toNlpTextResponse(
-    parseResult: RasaParseResponse,
-    userMessage: string,
-    response: RasaTextResponse[],
-    agentName: string,
-): NlpResponse;
-export function toNlpTextResponse(
-    response: DialogflowTextResponse,
-    agentName: string,
-): NlpResponse;
+): Promise<NlpStatus>;
 
-export function toNlpTextResponse(
-    response: SnipsResponse,
-    userMessage: string,
-    agentName: string,
-): NlpResponse;
-
-export function sendTextRequest(
-    textRequest: TextRequest,
-    agentName: string,
-): Promise<NlpResponse>;
-
-export function sendTextRequest(
-    textRequest: TextRequest,
-    agentName: string,
+/**
+ * Reset all contexts of a conversation.
+ *
+ * @param internalUserId The pseudonymized identifier which is used to define a session for a specific agent.
+ * @param agentToken Used to define the agent whose contexts shall be deleted.
+ *
+ * @returns An `NlpStatus`, signaling whether the request was successful.
+ */
+export function deleteAllContexts(
+    internalUserId: string,
     agentToken: string,
-    url: string,
-): Promise<NlpResponse>;
+): Promise<NlpStatus>;
 
-export function sendTextRequest(
-    textRequest: TextRequest,
-    agentName: string | number,
-): Promise<NlpResponse>;
-
-export function sendTextRequest(
-    textRequest: TextRequest,
+export function deleteAllContexts(
+    internalUserId: string,
     projectId: string,
     agentToken: string,
-    agentName: string,
-): Promise<NlpResponse>;
-
-export function sendTextResponse(response: SlackResponse): Promise<void>;
+): Promise<NlpStatus>;
 
 /**
  * Deletes a list of contexts from the conversation. The context system is based on the system used by Dialogflow.
@@ -1023,13 +1125,13 @@ export function deleteSelectedContexts(
 
 export function deleteSelectedContexts(
     internalUserId: string,
-    projectId: string,
     agentToken: string,
     contexts: string[],
 ): Promise<NlpStatus>;
 
 export function deleteSelectedContexts(
     internalUserId: string,
+    projectId: string,
     agentToken: string,
     contexts: string[],
 ): Promise<NlpStatus>;
@@ -1052,6 +1154,7 @@ type Result = {
     metadata: Metadata;
     score: number;
 };
+
 export type DialogflowParameters = {
     [key: string]: Parameter;
 };
@@ -1136,48 +1239,9 @@ export type DialogflowContextResponse = {
     status: DialogflowStatus;
 };
 
-export function toNlpStatus(response: DetectIntentResponse): NlpStatus;
-
 export function toNlpStatus(response: DialogflowContextResponse): NlpStatus;
 
-/**
- * Reset all contexts of a conversation.
- *
- * @param internalUserId The pseudonymized identifier which is used to define a session for a specific agent.
- * @param agentToken Used to define the agent whose contexts shall be deleted.
- *
- * @returns An `NlpStatus`, signaling whether the request was successful.
- */
-export function deleteAllContexts(
-    internalUserId: string,
-    agentToken: string,
-): Promise<NlpStatus>;
-
-export function deleteAllContexts(
-    internalUserId: string,
-    projectId: string,
-    agentToken: string,
-): Promise<NlpStatus>;
-
-/**
- * Deletes all contexts which are currently active for a certain agent. The context system is based on the
- * system used by Dialogflow. If you are using NLP backend that does not use a system like that you can just
- * ignore these requests. The requests will delete on the route `/deleteAllContexts` with the following JSON:
- * ```
- *  {
- *      user: string
- *  }
- * ```
- *
- * @param internalUserId The pseudonymized identifier which is used to define a session for a specific agent.
- * @param agentName Used to define the agent whose contexts shall be deleted.
- *
- * @returns An `NlpStatus`, signaling whether the request was successful.
- */
-export function deleteAllContexts(
-    internalUserId: string,
-    agentName: string,
-): Promise<NlpStatus>;
+export function toNlpStatus(response: DetectIntentResponse): NlpStatus;
 
 /**
  * Posts a list of contexts to the NLP backend. The context system is based on the Dialogflow context system.
@@ -1215,6 +1279,31 @@ export function postContexts(
     agent: DialogflowAgent,
     contexts: string[],
 ): Promise<NlpStatus>;
+
+export function sendTextRequest(
+    textRequest: TextRequest,
+    agentName: string,
+): Promise<NlpResponse>;
+
+export function sendTextRequest(
+    textRequest: TextRequest,
+    agentName: string,
+    agentToken: string,
+    url: string,
+): Promise<NlpResponse>;
+
+export function sendTextRequest(
+    textRequest: TextRequest,
+    projectId: string,
+    agentToken: string,
+    agentName: string,
+): Promise<NlpResponse>;
+
+export function sendTextRequest(
+    textRequest: TextRequest,
+    agentName: string | number,
+): Promise<NlpResponse>;
+
 /**
  * WARNING: The Dialogflow API version 1 will be deprecated soon. Migrate to version 2 and use the `DialogflowV2Adapter`.
  * Adapter for the [Dialogflow](https://dialogflow.com/) framework. This is an adapter for the Dialogflow API version 1.
@@ -1257,11 +1346,9 @@ export type DialogflowAgent = Agent & {
     project_id: string;
     defaultLifespan: number;
 };
-
 export type DialogflowAgents = {
     [key: string]: DialogflowAgent;
 };
-
 export interface DialogflowConfig extends NlpConfig<DialogflowAdapter> {
     agents: DialogflowAgents;
 }
@@ -1384,6 +1471,36 @@ export class SnipsAdapter implements NlpAdapter {
     ): Promise<NlpResponse>;
 }
 
+/**
+ * Transforms the DialogflowV2-Response into the generalized format used in this framework.
+ *
+ * @param responseArray Message retrieved from the DialogflowV2 endpoint. Unclear why it
+ *                      returns an array (contradicting documentation)
+ * @param agentName Name of the agent the query was sent to. Specified as a key in your `config.ts`.
+ */
+export function toNlpTextResponse(
+    responseArray: DetectIntentResponse[],
+    agentName: string,
+): NlpResponse;
+
+export function toNlpTextResponse(
+    response: DialogflowTextResponse,
+    agentName: string,
+): NlpResponse;
+
+export function toNlpTextResponse(
+    response: SnipsResponse,
+    userMessage: string,
+    agentName: string,
+): NlpResponse;
+
+export function toNlpTextResponse(
+    parseResult: RasaParseResponse,
+    userMessage: string,
+    response: RasaTextResponse[],
+    agentName: string,
+): NlpResponse;
+
 export function getAllContexts(
     agentName: string,
     internalUserId: string,
@@ -1491,7 +1608,7 @@ export type FacebookLocationAttachment = {
 };
 
 /**
- * The `FacebookChatConfig` interface is required for authentication with Facebook. It includes:
+ * The `IFacebookChatConfig` interface is required for authentication with Facebook. It includes:
  *
  * 1. `appSecret`: used to decrypt messages from Facebook to preserve the confidentiality.
  * 2. `version`: Version of the Facebook Graph API to which the request is sent to.
@@ -1593,6 +1710,7 @@ export type FacebookUrlButton = {
     readonly fallback_url?: string;
     readonly webview_share_button?: string;
 };
+export {};
 
 /**
  * Converts a message from the internal response format to a format that can be understood by the Facebook Messaging API.
@@ -1629,23 +1747,6 @@ export function sendMultipleResponses(
 ): Promise<void>;
 
 /**
- * Initializes the webhook and awaits new messages. If a message is received, `handleRequest` is triggered, which converts
- * the incoming message into a generalized format and passes it into the core for further processing steps.
- */
-export function initWebhook(
-    handleRequest: (
-        request: FacebookMessaging,
-        messengerUserId: string,
-    ) => Promise<Response<ChatAdapterResponse[]>>,
-): void;
-
-export function initWebhook(
-    _handleRequest: (
-        request: SlackRequest,
-    ) => Promise<Response<ChatAdapterResponse[]>>,
-): Promise<void>;
-
-/**
  * Converts a Facebook message into a generalized format which is used for further processing steps.
  * Currently supported types are:
  * 1. Standard `text` messages.
@@ -1671,6 +1772,12 @@ export function convertFacebookRequest(
  * @implements {ChatAdapter}
  */
 export class FacebookAdapter implements ChatAdapter {
+    private readonly server;
+
+    private readonly app;
+
+    constructor();
+
     init(
         handleRequest: (
             message: ChatAdapterRequest,
@@ -1678,32 +1785,7 @@ export class FacebookAdapter implements ChatAdapter {
         ) => Promise<Response<ChatAdapterResponse[]>>,
     ): Promise<void>;
 
-    contactClient(response: ChatAdapterResponse): Promise<void>;
-}
-
-export type CliClientRequest = {
-    text: string;
-    id: string;
-};
-
-export type CliClientResponse = {
-    readonly text: string;
-};
-
-/**
- * For more information regarding the setup:
- * see [CLI setup]{@link ../../_build/html/chat_adapter/cli_messenger.html}.
- * For more information regarding the functionality: see `ChatAdapter`.
- *
- * @implements {ChatAdapter}
- */
-export class CliAdapter implements ChatAdapter {
-    init(
-        handleRequest: (
-            message: ChatAdapterRequest,
-            messengerUserId: string,
-        ) => Promise<Response<ChatAdapterResponse[]>>,
-    ): Promise<void>;
+    deinit(): Promise<void>;
 
     contactClient(response: ChatAdapterResponse): Promise<void>;
 }
@@ -1739,7 +1821,38 @@ export class MirrorInterceptor<T extends BotFrameworkInterfaceMessage>
     handleMessage(userId: string, message: T): Promise<Response<T>>;
 }
 
+/**
+ * Exemplar configuration of the Facebook adapter. If you are unsure which information is required and how to retrieve it,
+ * take a look at the [Facebook]{@link ../../_build/html/chat_adapter/facebook.html} section of our documentation.
+ */
+export const platformChatFacebook: FacebookChatConfig;
+
+/**
+ * Exemplar configuration of the Dialogflow adapter (using version 2 of the Dialogflow API). If you are unsure which
+ * information is required and how to retrieve it, take a look at the
+ * [Dialogflow]{@link ../../_build/html/nlp_adapter/dialogflow.html} section of our documentation.
+ */
+export const platformNlpDialogflowV2: DialogflowConfig;
+
+export const serverConfig: ServerConfig;
+
+/**
+ * Simple interceptor configuration. Interceptors are interceptors across the framework to manipulate messages or
+ * perform further actions. These exemplar interceptors are only used to mirror an incoming message without further
+ * modifications. You can write arbitrarily complex interceptors, for more information see
+ * [here]{@link ../../_build/html/core/interfaces.html}.
+ */
 export const interceptorConfig: InterceptorConfig;
+
+/**
+ * IMPORTANT:
+ * You can set your own configuration in order to start the framework using different chat platforms and NLP services.
+ * If you do not provide a valid configuration the framework will start in the default configuration with the CLI
+ * client as chat adapter.
+ *
+ * Uncomment the next three lines and change the path to your configuration file to start the framework with the adapters
+ * of your choice.
+ */
 
 export type SlackRequest = SlackMessage;
 export type SlackMessage = {
@@ -1748,10 +1861,15 @@ export type SlackMessage = {
     user: string;
     text: string;
     ts: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blocks: any;
     ok: boolean;
-    subtype: string | undefined;
+    subtype?: string;
+    event: {
+        type: 'message';
+        text: string;
+        event_ts: string;
+        user: string;
+    };
 };
 
 export type SlackResponse = SlackTextResponse;
@@ -1778,13 +1896,30 @@ export function convertToSlackResponse(
     channel: string,
 ): SlackResponse;
 
-export function openChannel(userId: string): Promise<string>;
+/**
+ * The `SlackConfig` interface is required for authentication with Facebook. It includes:
+ *
+ * 1. `appSecret`: A signing secret which verifies the challenge send by the Slack API
+ *     For each page the application is integrated in, a different `pageAccessToken` has to be generated.
+ * 4. `token`: Used to verify the communication between your server and your Slack workspace.
+ *
+ * The interface has to be implemented by the `SlackAdapter`. For more information regarding the setup,
+ * see [Facebook setup]{@link ../../_build/html/chat_adapter/slack.html}.
+ *
+ * @interface
+ */
+export interface SlackConfig extends ChatConfig<SlackAdapter> {
+    token: string;
+}
 
-export function convertIntoChatAdapterRequest(
-    request: SlackRequest,
-): ChatAdapterRequest;
+export function openChannel(userId: string): Promise<string>;
+export function sendTextResponse(response: SlackResponse): Promise<void>;
 
 export class SlackAdapter implements ChatAdapter {
+    slackEvents: SlackEventAdapter;
+
+    constructor();
+
     init(
         handleRequest: (
             message: ChatAdapterRequest,
@@ -1792,21 +1927,39 @@ export class SlackAdapter implements ChatAdapter {
         ) => Promise<Response<ChatAdapterResponse[]>>,
     ): Promise<void>;
 
+    deinit(): Promise<void>;
+
     contactClient(response: ChatAdapterResponse): Promise<void>;
 }
 
-export const config: Config<
-    SlackAdapter | FacebookAdapter,
-    DialogflowAdapter | DialogflowV2Adapter | RasaAdapter | SnipsAdapter
->;
+/**
+ * Exemplar configuration of the Rasa adapter. If you are unsure which information is required and how to retrieve it,
+ * take a look at the [Rasa]{@link ../../_build/html/nlp_adapter/rasa.html} section of our documentation.
+ */
+export const platformNlpRasa: NlpConfig<RasaAdapter>;
 
-export const serverConfig: ServerConfig;
+/**
+ * An exemplar configuration.
+ * You can exchange elements (e.g. use Slack instead of Facebook) by using a different respective (messenger) configuration.
+ */
+export const config: Config<
+    FacebookAdapter | SlackAdapter | CliAdapter,
+    DialogflowV2Adapter | RasaAdapter | DialogflowAdapter | SnipsAdapter
+>;
 
 /**
  * Exemplar configuration of the Slack adapter. If you are unsure which information is required and how to retrieve it,
  * take a look at the [Slack]{@link ../../_build/html/chat_adapter/slack.html} section of our documentation.
  */
-export const platformChatSlack: ChatConfig<SlackAdapter>;
+export const platformChatSlack: SlackConfig;
+
+/**
+ * Exemplar configuration of the CLI adapter. If you are unsure which information is required and how to retrieve it,
+ * take a look at the [CLI]{@link ../../_build/html/chat_adapter/cli.html} section of our documentation.
+ * This configuration is used in case no chat configuration was provided and can be used in order to test the framework
+ * via the CLI client.
+ */
+export const platformChatCli: ChatConfig<CliAdapter>;
 
 /**
  * Exemplar configuration of the Dialogflow adapter (using version 1 of the Dialogflow API). If you are unsure which
@@ -1817,38 +1970,62 @@ export const platformChatSlack: ChatConfig<SlackAdapter>;
  */
 export const platformNlpDialogflow: DialogflowConfig;
 
-export const platformChatFacebook: FacebookChatConfig;
+/**
+ * Exemplar configuration of the Snips adapter. If you are unsure which information is required and how to retrieve it,
+ * take a look at the [Snips]{@link ../../_build/html/nlp_adapter/snips.html} section of our documentation.
+ */
+export const platformNlpSnips: NlpConfig<SnipsAdapter>;
 
-export const platformNlpDialogflowV2: DialogflowConfig;
+/**
+ * Typings for tests
+ */
+export const nlpMessageMap: Map<string, string[]>;
 
-export const platformNlpRasa: {
-    agents: {
-        rasa_test: {
-            executionIndex: number;
-            languageCode: string;
-            minScore: number;
-            project_id: string;
-            token: string;
-            url: string;
-        };
-    };
-    constructor: typeof RasaAdapter;
-    defaultLifespan: number;
-    name: string;
-};
+export class DummyNlpAdapter implements NlpAdapter {
+    lifespanInMinutes: number;
 
-export const platformNlpSnips: {
-    agents: {
-        snips_test: {
-            executionIndex: number;
-            languageCode: string;
-            minScore: number;
-            project_id: string;
-            token: string;
-            url: string;
-        };
-    };
-    constructor: typeof SnipsAdapter;
-    defaultLifespan: number;
-    name: string;
-};
+    currentContextMap: Map<string, Map<string, string[]>>;
+
+    constructor();
+
+    deleteAllContexts(
+        internalUserId: string,
+        agentName: string,
+    ): Promise<NlpStatus>;
+
+    deleteSelectedContexts(
+        internalUserId: string,
+        agentName: string,
+        contextsToDelete: string[],
+    ): Promise<NlpStatus>;
+
+    postContexts(
+        internalUserId: string,
+        agentName: string,
+        contextsToPost: string[],
+    ): Promise<NlpStatus>;
+
+    sendSingleTextRequest(
+        textRequest: TextRequest,
+        agentName: string,
+    ): Promise<NlpResponse>;
+}
+export const platformDummyAdapter: NlpConfig<DummyNlpAdapter>;
+export const SECRET: string;
+export function createFacebookAdapter(): FacebookAdapter;
+export function generateAppSecretProof(
+    accessToken: string,
+    clientSecret: string,
+): string;
+export function createFacebookServer(
+    messageMap: Map<string, string>,
+    users: Set<string>,
+    clientSecret: string,
+    version: string,
+): http.Server;
+
+export function createSlackAdapter(): SlackAdapter;
+export function createSlackServer(
+    messageMap: Map<string, string[]>,
+    users: Set<string>,
+): http.Server;
