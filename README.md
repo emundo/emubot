@@ -41,27 +41,27 @@ A detailed setup will follow soon.
 #### Chatadapter
 | Feature          | Facebook | Slack    | CLI Client |
 | -------- | -------- | -------- | -------- |
-| Authentication            | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark:   |
-| Verify payload            | :heavy_check_mark: | :heavy_check_mark: |:information_source: |
-| Text requests             | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark:   |
-| Image requests            | :heavy_check_mark: |  :x:               | :information_source:|
-| initial requests          | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
-| isFromAdmin               | :heavy_check_mark: | :x:                | :information_source:|
-| undefined                 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
-| Text responses            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  |
-| URL button responses      | :heavy_check_mark: | :x:                | :information_source:|
-| Image responses           | :heavy_check_mark: | :x:                | :information_source:|
-| Image with title responses| :heavy_check_mark: | :x:                | :information_source:|
-| Quickreply                | :heavy_check_mark: | :heavy_check_mark: | :x:                 |
-| Undefined                 | :heavy_check_mark: | :heavy_check_mark: | :information_source:|
+| Authentication            | done | done |done   |
+| Verify payload            | done | done |not done, not planned |
+| Text requests             | done | done |done   |
+| Image requests            | done |  not done               | not done, not planned|
+| initial requests          | done | done | done  |
+| isFromAdmin               | done | not done                | not done, not planned|
+| undefined                 | done | done | done  |
+| Text responses            | done | done | done  |
+| URL button responses      | done | not done                | not done, not planned|
+| Image responses           | done | not done                | not done, not planned|
+| Image with title responses| done | not done                | not done, not planned|
+| Quickreply                | done | done | not done                 |
+| Undefined                 | done | done | not done, not planned|
 
 #### NLP adapter
 | Feature | DialogflowV2 | Snips | Rasa |
 | --------------------- | -------- | -------- | -------- |
-|sendTextRequest        |:heavy_check_mark:|:heavy_check_mark:  |:heavy_check_mark:  |
-|deleteSelectedContexts |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
-|deleteAllContexts      |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
-|postContexts           |:heavy_check_mark:|:heavy_check_mark:\*|:heavy_check_mark:\*|
+|sendTextRequest        |done|done  |done  |
+|deleteSelectedContexts |done|done\*|done\*|
+|deleteAllContexts      |done|done\*|done\*|
+|postContexts           |done|done\*|done\*|
 
 \* Snips and Rasa have no context system in the same fashion as Dialogflow. As such the methods are implemented to be used when an additional context system is added to those systems.
 

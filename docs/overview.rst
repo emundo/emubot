@@ -19,8 +19,8 @@ information and directly respond to the user or signal that an external service 
 operated by large companies such as Google (Dialogflow) or Microsoft (LUIS), but (open source) startups like Rasa and Snips also have established
 themselves.
 
-If you want to offer a chatbot, you as the chatbot operator usually have have to define certain *intents* (*which requests should the bot answer*)
-using specific *entities* (*which words are relevant to detecting the intention and further processing the query*) and possibly (often static) answers
+If you want to offer a chatbot, you as the chatbot operator usually have to define certain *intents* (which define which requests the bot should answer)
+using specific *entities* (defining which words are relevant to detecting the intention and further processing the query) and possibly (often static) answers
 or (dynamic) external actions.
 
 Afterwards you can often directly connect a messaging platform to your NLP service, which is then able to guess the intention and reply to the user
