@@ -1,6 +1,5 @@
 import { should, expect } from 'chai';
 import { Server } from 'http';
-import { post, OptionsWithUrl } from 'request-promise-native';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import { createHmac } from 'crypto';
@@ -31,6 +30,8 @@ import {
     createSlackServer,
     createSlackAdapter,
 } from './_mocks/_SlackTestServer';
+import { OptionsWithUrl } from '../../../src/framework/core/utils/responseUtils';
+import { postRequest } from '../../../src/framework/chat_adapter/utils';
 
 chai.use(chaiAsPromised);
 
@@ -176,16 +177,17 @@ describe('Slack', () => {
 
         return {
             body: body,
-            headers: {
-                'X-Slack-Signature': `v0=${slackSignature}`,
-                'X-Slack-Request-Timestamp': requestTimestamp,
-                Accept: 'application/json',
-                Authorization: `Bearer ${
-                    (getConfig().platform.chat as SlackConfig).token
-                }`,
-                'Content-Type': 'application/json',
+            options: {
+                headers: {
+                    'X-Slack-Signature': `v0=${slackSignature}`,
+                    'X-Slack-Request-Timestamp': requestTimestamp,
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${(getConfig().platform.chat as SlackConfig).token
+                        }`,
+                    'Content-Type': 'application/json',
+                },
+                json: true,
             },
-            json: true,
             url: `http://localhost:4001/slack/events`,
         };
     }
@@ -212,7 +214,7 @@ describe('Slack', () => {
                 userId,
                 channel,
             );
-            post(request);
+            postRequest(request);
             // Slack expects to have an answer after at most 2 seconds
             await sleep(100);
             should().exist(messageMap.has(userId));
@@ -226,7 +228,7 @@ describe('Slack', () => {
                 userId,
                 channel,
             );
-            post(request);
+            postRequest(request);
             await sleep(100); // Slack expects to have an answer after at most 2 seconds.
 
             it('Multiple (all) messages retrieved from server', async () => {

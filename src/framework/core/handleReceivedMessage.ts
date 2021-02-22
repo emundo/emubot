@@ -36,6 +36,7 @@ export async function handleReceivedMessageInCore(
             await chatToCore
         ).handleMessage(messengerUserId, request);
 
+
         // Message was handled in the interceptor and the processing will stop without sending a message to the user.
         if (messageAfterFirstInterceptor.kind === 'NoResponse') {
             return messageAfterFirstInterceptor;
@@ -172,9 +173,8 @@ async function handleTextRequest(
             internalUserId,
         );
         logger.debug(`${LOG_MESSAGES.response.data}
-            ${JSON.stringify(responseData, undefined, 2)}\n ${
-            LOG_MESSAGES.response.action
-        }
+            ${JSON.stringify(responseData, undefined, 2)}\n ${LOG_MESSAGES.response.action
+            }
             ${JSON.stringify(
                 responseData.response.textRequestResult,
                 undefined,

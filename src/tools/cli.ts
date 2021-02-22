@@ -1,5 +1,4 @@
 import * as chalk from 'chalk';
-import { post, OptionsWithUrl } from 'request-promise-native';
 import { ArgumentParser } from 'argparse';
 import { Logger, createLogger, transports, format } from 'winston';
 import {
@@ -7,6 +6,8 @@ import {
     CliClientInitialMessage,
 } from '../framework/chat_adapter/cli/model/CliClientRequest';
 import { CliClientResponse } from '../framework/chat_adapter/cli/model/CliClientResponse';
+import { OptionsWithUrl } from '../framework/core/utils/responseUtils';
+import { postRequest } from '../framework/chat_adapter/utils';
 
 const colorizeSuccess = chalk.bold.green;
 const stdin = process.stdin;
@@ -24,10 +25,12 @@ function createRequestConfiguration(textRequest: string): OptionsWithUrl {
 
     return {
         body,
-        headers: {
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url,
     };
 }
@@ -44,19 +47,21 @@ async function sendHello(): Promise<void> {
 
     const config: OptionsWithUrl = {
         body,
-        headers: {
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url,
     };
-    post(config);
+    postRequest(config);
 }
 
 async function sendMessage(text: string): Promise<void> {
     const config: OptionsWithUrl = createRequestConfiguration(text);
     try {
-        const response: CliClientResponse[] = await post(config);
+        const response: CliClientResponse[] = await postRequest(config);
         logger.verbose(JSON.stringify(response, null, 2));
         response.forEach((resp: CliClientResponse) => {
             stdout(`${colorizeSuccess('emubot:')} ${resp.text}`);

@@ -36,8 +36,13 @@ export function createFacebookServer(
 
     const server: http.Server = http.createServer(app);
     app.post(`/${version}${facebookMessageRoute}`, (req, res) => {
+        console.log(req.body);
+
+        if (req.query.access_token === undefined) {
+            throw Error("Accesstoken is undefined. \n");
+        }
         const SIGNING_SECRET = generateAppSecretProof(
-            req.query.access_token,
+            req.query.access_token.toString(),
             clientSecret,
         );
         if (!((req.query.appsecret_proof as string) === SIGNING_SECRET))

@@ -1,4 +1,3 @@
-import * as request from 'request-promise-native';
 import { TextRequest } from '../../model/TextRequest';
 import { NlpResponse } from '../../model/NlpAdapterResponse';
 import { logger } from '../../../logger';
@@ -6,6 +5,8 @@ import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getConfig } from '../../../core/getConfig';
 import { toNlpTextResponse } from './responseConverters';
 import { RasaTextResponse, RasaParseResponse } from '../model/RasaResponse';
+import { postRequest } from '../../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 export async function sendTextRequest(
     textRequest: TextRequest,
@@ -19,10 +20,10 @@ export async function sendTextRequest(
     const requestConfig = createRequestConfiguration(textRequest, agentName);
 
     try {
-        const responseText: RasaTextResponse[] = await request.post(
+        const responseText: RasaTextResponse[] = await postRequest(
             requestText,
         );
-        const resp: RasaParseResponse = await request.post(requestConfig);
+        const resp: RasaParseResponse = await postRequest(requestConfig);
 
         return toNlpTextResponse(
             resp,
@@ -39,27 +40,28 @@ export async function sendTextRequest(
 function createRequestConfigurationTextMessage(
     textRequest: TextRequest,
     agentName: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             message: textRequest.message,
             message_id: textRequest.internalUserId,
             token: getConfig().platform.nlp.agents[agentName].token,
         },
-        headers: {
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
-        url: `${
-            getConfig().platform.nlp.agents[agentName].url
-        }/webhooks/rest/webhook`,
+        url: `${getConfig().platform.nlp.agents[agentName].url
+            }/webhooks/rest/webhook`,
     };
 }
 
 function createRequestConfiguration(
     textRequest: TextRequest,
     agentName: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             message_id: textRequest.internalUserId,
@@ -67,10 +69,12 @@ function createRequestConfiguration(
             text: textRequest.message,
             token: getConfig().platform.nlp.agents[agentName].token,
         },
-        headers: {
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${getConfig().platform.nlp.agents[agentName].url}/model/parse`,
     };
 }

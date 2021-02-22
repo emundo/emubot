@@ -1,8 +1,9 @@
-import * as request from 'request-promise-native';
 import { NlpStatus } from '../model/NlpAdapterResponse';
 import { logger } from '../../logger';
 import { LOG_MESSAGES } from '../../constants/logMessages';
 import { getConfig } from '../..';
+import { deleteRequest } from '../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../core/utils/responseUtils';
 
 /**
  * Deletes all contexts which are currently active for a certain agent. The context system is based on the
@@ -28,8 +29,7 @@ export function deleteAllContexts(
         agentName,
     );
 
-    return request
-        .delete(config)
+    return deleteRequest(config)
         .then()
         .catch(err => {
             logger.error(`${LOG_MESSAGES.nlp.deleteAllContexts}${err}`);
@@ -66,9 +66,7 @@ export function deleteSelectedContexts(
         contexts,
     );
 
-    return request
-        .delete(config)
-        .then()
+    return deleteRequest(config).then()
         .catch(err => {
             logger.error(`${LOG_MESSAGES.nlp.deleteSelectedContexts}${err}`);
 
@@ -80,20 +78,22 @@ function createRequestConfigurationSelectedContexts(
     internalUserId: string,
     agentName: string,
     contexts: string[],
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             contexts,
             user: internalUserId,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${
-                getConfig().platform.nlp.agents[agentName].token
-            }`,
-            'Content-Type': 'application/json',
+        options: {
+
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${getConfig().platform.nlp.agents[agentName].token
+                    }`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${getConfig().platform.nlp.agents[agentName].url}/deleteContexts`,
     };
 }
@@ -101,21 +101,21 @@ function createRequestConfigurationSelectedContexts(
 function createRequestConfigurationAllContexts(
     internalUserId: string,
     agentName: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             user: internalUserId,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${
-                getConfig().platform.nlp.agents[agentName].token
-            }`,
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${getConfig().platform.nlp.agents[agentName].token
+                    }`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
-        url: `${
-            getConfig().platform.nlp.agents[agentName].url
-        }/deleteAllContexts`,
+        url: `${getConfig().platform.nlp.agents[agentName].url
+            }/deleteAllContexts`,
     };
 }

@@ -1,4 +1,4 @@
-import { DetectIntentResponse } from 'dialogflow';
+import * as dialogflow from '@google-cloud/dialogflow';
 import * as winston from 'winston';
 import * as express from 'express';
 import * as http from 'http';
@@ -35,11 +35,11 @@ export type NlpParameters = {
 };
 type SingleNlpParameter =
     | {
-          [key: string]: string;
-      }
+        [key: string]: string;
+    }
     | {
-          fields: SingleNlpParameter;
-      }
+        fields: SingleNlpParameter;
+    }
     | string
     | string[]
     | number;
@@ -95,20 +95,20 @@ export type CallButton = {
 };
 export type NlpCustomPayloadButton =
     | {
-          type: 'urlButton';
-          title: string;
-          payload: UrlButton[];
-      }
+        type: 'urlButton';
+        title: string;
+        payload: UrlButton[];
+    }
     | {
-          type: 'postBackButton';
-          title: string;
-          payload: PostBackButton[];
-      }
+        type: 'postBackButton';
+        title: string;
+        payload: PostBackButton[];
+    }
     | {
-          type: 'callButton';
-          title: string;
-          payload: CallButton[];
-      };
+        type: 'callButton';
+        title: string;
+        payload: CallButton[];
+    };
 export type NlpCustomPayloadQuickReply = {
     type: 'customQuickReply';
     title: string;
@@ -293,10 +293,10 @@ export function isAttachmentRequest(
  */
 export type ChatAdapterResponse = {
     Message:
-        | ChatAdapterTextMessage
-        | ChatAdapterAttachmentMessage
-        | ChatAdapterQuickReplyMessage
-        | ChatAdapterCustomPayloadQuickReplyMessage;
+    | ChatAdapterTextMessage
+    | ChatAdapterAttachmentMessage
+    | ChatAdapterQuickReplyMessage
+    | ChatAdapterCustomPayloadQuickReplyMessage;
     messengerUserId: string;
 };
 /**
@@ -319,20 +319,20 @@ export type ChatAdapterTextMessage = {
  */
 export type ChatAdapterButtonAttachmentMessage =
     | {
-          type: 'urlButton';
-          text: string;
-          buttons: UrlButton[];
-      }
+        type: 'urlButton';
+        text: string;
+        buttons: UrlButton[];
+    }
     | {
-          type: 'postBackButton';
-          text: string;
-          buttons: PostBackButton[];
-      }
+        type: 'postBackButton';
+        text: string;
+        buttons: PostBackButton[];
+    }
     | {
-          type: 'callButton';
-          text: string;
-          buttons: CallButton[];
-      };
+        type: 'callButton';
+        text: string;
+        buttons: CallButton[];
+    };
 /**
  * A simple image which can be retrieved using an url. Locally stored images are currently not supported.
  */
@@ -368,13 +368,13 @@ export type ChatAdapterCustomPayloadQuickReplyMessage = {
  */
 export type Response<T> =
     | {
-          payload: T;
-          kind: 'Response';
-          statusCode: number;
-          userId: string;
-          interruptProcessing?: boolean;
-          action?: string;
-      }
+        payload: T;
+        kind: 'Response';
+        statusCode: number;
+        userId: string;
+        interruptProcessing?: boolean;
+        action?: string;
+    }
     | NoResponse;
 /**
  * If `NoResponse` is returned from an interceptor the user does not receive a visible message.
@@ -491,7 +491,7 @@ export interface Interceptor<T, U> {
  * Used to specify the type of a class constructor (NLP or Chat)
  * */
 export interface ClassConstructor<T> {
-    new (): T;
+    new(): T;
 }
 /**
  * A (chat)bot can be deployed on a messaging service. The bot can consist of multiple so called _agents_.
@@ -561,14 +561,14 @@ export type InterceptorConfig = {
 export type Config<
     SpecificChatAdapter extends ChatAdapter,
     SpecificNlpAdapter extends NlpAdapter
-> = {
-    interceptors: InterceptorConfig;
-    platform: {
-        chat: ChatConfig<SpecificChatAdapter>;
-        nlp: NlpConfig<SpecificNlpAdapter>;
+    > = {
+        interceptors: InterceptorConfig;
+        platform: {
+            chat: ChatConfig<SpecificChatAdapter>;
+            nlp: NlpConfig<SpecificNlpAdapter>;
+        };
+        server: ServerConfig;
     };
-    server: ServerConfig;
-};
 
 /**
  * Convenience function to provide access to the current configuration.
@@ -1160,8 +1160,8 @@ export type DialogflowParameters = {
 };
 type Parameter =
     | {
-          [key: string]: string;
-      }
+        [key: string]: string;
+    }
     | string
     | string[];
 type Context = {
@@ -1241,7 +1241,7 @@ export type DialogflowContextResponse = {
 
 export function toNlpStatus(response: DialogflowContextResponse): NlpStatus;
 
-export function toNlpStatus(response: DetectIntentResponse): NlpStatus;
+export function toNlpStatus(response: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentResponse): NlpStatus;
 
 /**
  * Posts a list of contexts to the NLP backend. The context system is based on the Dialogflow context system.
@@ -1479,7 +1479,7 @@ export class SnipsAdapter implements NlpAdapter {
  * @param agentName Name of the agent the query was sent to. Specified as a key in your `config.ts`.
  */
 export function toNlpTextResponse(
-    responseArray: DetectIntentResponse[],
+    responseArray: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentResponse[],
     agentName: string,
 ): NlpResponse;
 
@@ -1659,9 +1659,9 @@ type OtherQuickReply = {
 };
 export type FacebookAttachmentMessage = {
     readonly attachment:
-        | FacebookButtonAttachment
-        | FacebookImageAttachment
-        | FacebookGenericTemplate;
+    | FacebookButtonAttachment
+    | FacebookImageAttachment
+    | FacebookGenericTemplate;
 };
 export type FacebookGenericTemplate = {
     readonly type: 'template';
@@ -1710,7 +1710,7 @@ export type FacebookUrlButton = {
     readonly fallback_url?: string;
     readonly webview_share_button?: string;
 };
-export {};
+export { };
 
 /**
  * Converts a message from the internal response format to a format that can be understood by the Facebook Messaging API.

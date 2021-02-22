@@ -1,4 +1,4 @@
-import { ContextsClient } from 'dialogflow';
+import { ContextsClient } from '@google-cloud/dialogflow';
 import { logger } from '../../../logger';
 import { DialogflowConfig } from '../dialogflowConfig';
 import { getConfig } from '../../..';
@@ -13,7 +13,7 @@ export function getAllContexts(
         keyFilename: dialogflowAgent.token,
         projectId: dialogflowAgent.project_id,
     });
-    const sessionPath = contextsClient.sessionPath(
+    const sessionPath = contextsClient.projectAgentSessionPath(
         dialogflowAgent.project_id,
         internalUserId,
     );

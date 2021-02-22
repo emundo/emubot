@@ -1,3 +1,7 @@
+import * as needle from 'needle';
+import { LOG_MESSAGES } from '../constants/logMessages';
+import { logger } from '../logger';
+import { OptionsWithUrl } from '../core/utils/responseUtils';
 import { ChatAdapterResponse } from './ChatAdapterResponse';
 
 /**
@@ -32,6 +36,30 @@ export function mapSerialized<T>(
     return messageArray.length === 0
         ? Promise.resolve()
         : mappingFunction(messageArray[0]).then(() =>
-              mapSerialized(messageArray.slice(1), mappingFunction),
-          );
+            mapSerialized(messageArray.slice(1), mappingFunction),
+        );
+}
+
+
+
+export function postRequest(requestConfig: OptionsWithUrl): Promise<any> {
+    return needle("post", requestConfig.url, requestConfig.body, requestConfig.options).then((resp: needle.NeedleResponse) => {
+        if (resp.statusCode !== 200)
+            throw Error(`${LOG_MESSAGES.chat.unableToSendResponse}: ${resp.statusCode}`);
+        return resp.body;
+    }).catch(err => {
+        logger.error(`${LOG_MESSAGES.chat.unableToSendResponse}: ${err}`);
+        throw err;
+    });
+}
+
+export function deleteRequest(requestConfig: OptionsWithUrl): Promise<any> {
+    return needle("delete", requestConfig.url, requestConfig.body, requestConfig.options).then((resp: needle.NeedleResponse) => {
+        if (resp.statusCode !== 200)
+            throw Error(`${LOG_MESSAGES.chat.unableToSendResponse}: ${resp.statusCode}`);
+        return resp.body;
+    }).catch(err => {
+        logger.error(`${LOG_MESSAGES.chat.unableToSendResponse}: ${err}`);
+        throw err;
+    });
 }

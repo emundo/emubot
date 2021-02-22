@@ -41,3 +41,14 @@ export function createResponse<T>(
         action,
     };
 }
+
+
+// Options format in the old request package fashion. Since the package is now deprecated, this is only a stub until a more detailed refactoring happens.
+export type OptionsWithUrl = {
+    body: any,
+    options: {
+        headers: {},
+        json: boolean,
+    }
+    url: string,
+};

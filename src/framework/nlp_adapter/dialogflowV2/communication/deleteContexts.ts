@@ -1,5 +1,5 @@
 import { NlpStatus } from '../../model/NlpAdapterResponse';
-import { ContextsClient } from 'dialogflow';
+import { ContextsClient } from '@google-cloud/dialogflow';
 import { logger } from '../../../logger';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { makeSuccess } from '../../INlpAdapter';
@@ -14,7 +14,7 @@ export async function deleteAllContexts(
         projectId,
     });
 
-    const sessionPath = contextsClient.sessionPath(projectId, internalUserId);
+    const sessionPath = contextsClient.projectAgentSessionPath(projectId, internalUserId);
 
     try {
         await contextsClient.deleteAllContexts({ parent: sessionPath });
@@ -38,7 +38,7 @@ export async function deleteSelectedContexts(
         projectId,
     });
 
-    const sessionPath = contextsClient.sessionPath(projectId, internalUserId);
+    const sessionPath = contextsClient.projectAgentSessionPath(projectId, internalUserId);
 
     const deletedContexts = contexts.map(async context => {
         contextsClient.deleteContext({

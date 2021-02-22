@@ -1,4 +1,3 @@
-import * as request from 'request-promise-native';
 import { logger } from '../../../logger';
 import { NlpStatus } from '../../model/NlpAdapterResponse';
 import { toNlpStatus } from './responseConverters';
@@ -8,6 +7,8 @@ import {
     DialogflowConfig,
     DialogflowAgent,
 } from '../../dialogflowV2/dialogflowConfig';
+import { postRequest } from '../../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 export async function postContexts(
     internalUserId: string,
@@ -25,7 +26,7 @@ export async function postContexts(
                     dialogflowAgent,
                 );
 
-                const requestResult = await request.post(postConfig);
+                const requestResult = await postRequest(postConfig);
 
                 logger.debug(
                     `${LOG_MESSAGES.nlp.contextCreated} ${requestResult}`,
@@ -52,18 +53,21 @@ function createPostRequestConfiguration(
     internalUserId: string,
     context: string,
     agent: DialogflowAgent,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             lifespan: agent.defaultLifespan,
             name: context,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${agent.token}`,
-            'Content-Type': 'application/json',
+        options: {
+
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${agent.token}`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `https://api.dialogflow.com/v1/contexts?sessionId=${internalUserId}`,
     };
 }
