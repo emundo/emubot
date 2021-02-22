@@ -1,9 +1,10 @@
-import * as request from 'request-promise-native';
 import { getConfig } from '../../core/getConfig';
 import { NlpStatus } from '../model/NlpAdapterResponse';
 import { logger } from '../../logger';
 import { LOG_MESSAGES } from '../../constants/logMessages';
 import { DialogflowConfig } from '../dialogflowV2/dialogflowConfig';
+import { postRequest } from '../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../core/utils/responseUtils';
 
 /**
  * Posts a list of contexts to the NLP backend. The context system is based on the Dialogflow context system.
@@ -35,8 +36,7 @@ export async function postContexts(
         contexts,
     );
 
-    return request
-        .post(config)
+    return postRequest(config)
         .then()
         .catch(err => {
             logger.error(
@@ -51,7 +51,7 @@ function createPostRequestConfiguration(
     internalUserId: string,
     agentName: string,
     contexts: string[],
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     const dialogflowConfig = getConfig().platform.nlp as DialogflowConfig;
 
     return {
@@ -60,12 +60,14 @@ function createPostRequestConfiguration(
             lifespan: dialogflowConfig.agents[agentName].defaultLifespan,
             user: internalUserId,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${dialogflowConfig.agents[agentName].token}`,
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${dialogflowConfig.agents[agentName].token}`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${dialogflowConfig.agents[agentName].url}/postContexts`,
     };
 }

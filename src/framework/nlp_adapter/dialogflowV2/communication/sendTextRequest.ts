@@ -1,7 +1,7 @@
 import { TextRequest } from '../../model/TextRequest';
 import { NlpResponse } from '../../model/NlpAdapterResponse';
 import { logger } from '../../../logger';
-import * as dialogflow from 'dialogflow';
+import * as dialogflow from '@google-cloud/dialogflow';
 import { toNlpTextResponse } from './responseConverters';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getAllContexts } from './getContexts';
@@ -17,7 +17,7 @@ export async function sendTextRequest(
         keyFilename: agentToken,
         projectId,
     });
-    const sessionPath = sessionClient.sessionPath(
+    const sessionPath = sessionClient.projectAgentSessionPath(
         projectId,
         textRequest.internalUserId,
     );
@@ -32,7 +32,7 @@ export async function sendTextRequest(
         const resp = await sessionClient.detectIntent(config);
         logger.debug(`DialogflowV2 response: ${JSON.stringify(resp)}`);
 
-        return toNlpTextResponse(resp, agentName);
+        return toNlpTextResponse(resp[0], agentName);
     } catch (error) {
         logger.error(`${LOG_MESSAGES.nlp.sendTextRequest}${error}`);
 
@@ -44,7 +44,7 @@ function createDialogflowRequestConfiguration(
     textRequest: TextRequest,
     sessionPath: string,
     agentName: string,
-): dialogflow.DetectIntentRequest {
+): dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentRequest {
     return {
         queryInput: {
             text: {

@@ -1,9 +1,10 @@
-import * as request from 'request-promise-native';
 import { NlpStatus } from '../../model/NlpAdapterResponse';
 import { toNlpStatus } from './responseConverters';
 import { makeSuccess } from '../../INlpAdapter';
 import { logger } from '../../../logger';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
+import { deleteRequest } from '../../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 /**
  * Reset all contexts of a conversation.
@@ -23,7 +24,7 @@ export async function deleteAllContexts(
     );
 
     try {
-        const contextResponse = await request.delete(config);
+        const contextResponse = await deleteRequest(config);
 
         return toNlpStatus(contextResponse);
     } catch (err) {
@@ -61,14 +62,17 @@ function createRequestConfigurationSelectedContexts(
     internalUserId: string,
     agentToken: string,
     context: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${agentToken}`,
-            'Content-Type': 'application/json',
+        body: {},
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${agentToken}`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `https://api.dialogflow.com/v1/contexts/${context}?sessionId=${internalUserId}`,
     };
 }
@@ -76,14 +80,17 @@ function createRequestConfigurationSelectedContexts(
 function createRequestConfigurationAllContexts(
     internalUserId: string,
     agentToken: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${agentToken}`,
-            'Content-Type': 'application/json',
+        body: null,
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${agentToken}`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `https://api.dialogflow.com/v1/contexts?sessionId=${internalUserId}`,
     };
 }

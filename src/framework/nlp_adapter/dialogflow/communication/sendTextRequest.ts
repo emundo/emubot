@@ -1,10 +1,11 @@
-import * as request from 'request-promise-native';
 import { TextRequest } from '../../model/TextRequest';
 import { NlpResponse } from '../../model/NlpAdapterResponse';
 import { toNlpTextResponse } from './responseConverters';
 import { logger } from '../../../logger';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getConfig } from '../../../core/getConfig';
+import { postRequest } from '../../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 export async function sendTextRequest(
     textRequest: TextRequest,
@@ -27,7 +28,7 @@ export async function sendTextRequest(
             url,
             agentName,
         );
-        const req = await request.post(config);
+        const req = await postRequest(config);
 
         return toNlpTextResponse(req, agentName);
     } catch (error) {
@@ -42,19 +43,21 @@ function createRequestConfiguration(
     agentToken: string,
     url: string,
     agentName: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             lang: getConfig().platform.nlp.agents[agentName].languageCode,
             query: textRequest.message,
             sessionId: textRequest.internalUserId,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${agentToken}`,
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${agentToken}`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url,
     };
 }

@@ -2,8 +2,7 @@ import { should } from 'chai';
 import { Server } from 'http';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import { post, OptionsWithUrl } from 'request-promise-native';
-
+import { OptionsWithUrl } from '../../../src/framework/core/utils/responseUtils'
 import { FacebookChatConfig } from '../../../src/framework/chat_adapter/facebook/facebookConfig';
 import { generateId } from '../../../src/framework/core/utils/generateId';
 import { FacebookAdapter } from '../../../src/framework/chat_adapter/facebook/FacebookAdapter';
@@ -29,6 +28,7 @@ import {
     DummyNlpAdapter,
     platformDummyAdapter,
 } from '../../_mocks/DummyNlpAdapter';
+import { postRequest } from '../../../src/framework/chat_adapter/utils';
 
 chai.use(chaiAsPromised);
 
@@ -82,14 +82,16 @@ function createRequestConfiguration(
 
     return {
         body: body,
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+        options: {
+
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
-        url: `http://localhost:${getConfig().server.port}${
-            getConfig().platform.chat.webhook_path
-        }`,
+        url: `http://localhost:${getConfig().server.port}${getConfig().platform.chat.webhook_path
+            }`,
     };
 }
 
@@ -186,7 +188,7 @@ describe('Facebook adapter', () => {
                 'hey',
                 userId,
             );
-            await post(request).should.eventually.be.fulfilled;
+            await postRequest(request).should.eventually.be.fulfilled;
         });
 
         afterEach(async () => {

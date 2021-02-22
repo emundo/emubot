@@ -1,10 +1,10 @@
-import { post, OptionsWithUrl } from 'request-promise-native';
 import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import { SlackRequest, SlackMessage } from '../model/SlackRequest';
 import { Response } from '../../../core/model/Response';
 import { getConfig } from '../../../core/getConfig';
 import { SlackEventAdapter } from '@slack/events-api/dist/adapter';
 import { logger } from '../../../logger';
+
 import { convertToSlackResponse } from './convertResponse';
 import {
     SlackResponse,
@@ -13,7 +13,8 @@ import {
 } from '../model/SlackResponse';
 import { SlackConfig } from '../slackConfig';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
-import { mapSerialized } from '../../utils';
+import { mapSerialized, postRequest } from '../../utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 export async function openChannel(userId: string): Promise<string> {
     const config: OptionsWithUrl = createRequestConfiguration(
@@ -22,7 +23,7 @@ export async function openChannel(userId: string): Promise<string> {
         '',
         'im.open',
     );
-    const resp: SlackOpenChannelResponse | SlackErrorResponse = await post(
+    const resp: SlackOpenChannelResponse | SlackErrorResponse = await postRequest(
         config,
     ).catch(e => logger.error(e));
 
@@ -45,7 +46,7 @@ export async function sendTextResponse(response: SlackResponse): Promise<void> {
         'chat.postMessage',
     );
 
-    await post(config).catch(e => logger.error(e));
+    await postRequest(config).catch(e => logger.error(e));
 }
 
 export async function initWebhook(
@@ -86,7 +87,7 @@ async function handleMessage(
         event.channel,
         'chat.postMessage',
     );
-    await post(config).catch(e => logger.error(e));
+    await postRequest(config).catch(e => logger.error(e));
     const responses: Response<ChatAdapterResponse[]> = await _handleRequest(
         event,
     );
@@ -112,14 +113,15 @@ function createRequestConfiguration(
             text,
             user,
         },
-        headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${
-                (getConfig().platform.chat as SlackConfig).token
-            }`,
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${(getConfig().platform.chat as SlackConfig).token
+                    }`,
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${getConfig().platform.chat.url}${route}`,
     };
 }

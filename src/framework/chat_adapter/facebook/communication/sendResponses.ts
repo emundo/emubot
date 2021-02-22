@@ -1,13 +1,14 @@
+import * as crypto from 'crypto';
+
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 import { ChatAdapterResponse } from '../../ChatAdapterResponse';
 import { convertToFacebookResponse } from './convertResponse';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { logger, getConfig } from '../../..';
 import { FacebookMessage } from '../model/FacebookPostResponse';
 import { FacebookResponseConfirmation } from '../model/FacebookResponseConfirmation';
-import * as request from 'request-promise-native';
 import { FacebookChatConfig } from '../facebookConfig';
-import * as crypto from 'crypto';
-import { mapSerialized } from '../../utils';
+import { mapSerialized, postRequest } from '../../utils';
 
 /**
  * Converts messages that use the internal format to responses that are compatible with the Facebook SEND API
@@ -29,11 +30,11 @@ export function sendMultipleResponses(
         value === undefined
             ? Promise.resolve()
             : sendResponse(value, messengerUserId).catch(error => {
-                  logger.error(
-                      `${LOG_MESSAGES.chat.unableToSendResponse} ${error}`,
-                  );
-                  throw error;
-              }),
+                logger.error(
+                    `${LOG_MESSAGES.chat.unableToSendResponse} ${error}`,
+                );
+                throw error;
+            }),
     );
 }
 
@@ -49,14 +50,14 @@ function sendResponse(
     messengerUserId: string,
 ): Promise<FacebookResponseConfirmation> {
     const requestConfig = createRequestConfiguration(message, messengerUserId);
+    return postRequest(requestConfig) as Promise<FacebookResponseConfirmation>;
 
-    return request.post(requestConfig).promise();
 }
 
 function createRequestConfiguration(
     message: FacebookMessage,
     messengerUserId: string,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     const facebookConfig = (getConfig().platform
         .chat as unknown) as FacebookChatConfig;
     const domain = facebookConfig.url;
@@ -75,11 +76,13 @@ function createRequestConfiguration(
                 id: messengerUserId,
             },
         },
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
+        options: {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${domain}${version}/me/messages?access_token=${accessToken}&appsecret_proof=${appSecretHash}`,
     };
 }

@@ -1,4 +1,3 @@
-import * as request from 'request-promise-native';
 import { TextRequest } from '../../model/TextRequest';
 import { NlpResponse } from '../../model/NlpAdapterResponse';
 import { logger } from '../../../logger';
@@ -6,6 +5,8 @@ import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getConfig } from '../../../core/getConfig';
 import { toNlpTextResponse } from './responseConverters';
 import { SnipsResponse } from '../model/SnipsTextResponse';
+import { postRequest } from '../../../chat_adapter/utils';
+import { OptionsWithUrl } from '../../../core/utils/responseUtils';
 
 export async function sendTextRequest(
     textRequest: TextRequest,
@@ -13,7 +14,7 @@ export async function sendTextRequest(
 ): Promise<NlpResponse> {
     const requestConfig = createRequestConfiguration(textRequest, agentName);
     try {
-        const resp: SnipsResponse = await request.post(requestConfig);
+        const resp: SnipsResponse = await postRequest(requestConfig);
 
         return toNlpTextResponse(
             resp,
@@ -29,17 +30,20 @@ export async function sendTextRequest(
 function createRequestConfiguration(
     textRequest: TextRequest,
     agentName: string | number,
-): request.OptionsWithUrl {
+): OptionsWithUrl {
     return {
         body: {
             message_id: textRequest.internalUserId,
             text: textRequest.message,
             token: getConfig().platform.nlp.agents[agentName].token,
         },
-        headers: {
-            'Content-Type': 'application/json',
+        options: {
+
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            json: true,
         },
-        json: true,
         url: `${getConfig().platform.nlp.agents[agentName].url}/parse`,
     };
 }

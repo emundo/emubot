@@ -1,24 +1,21 @@
 import {
-    NlpText,
     NlpResponse,
     NlpStatus,
     NlpMessage,
-    NlpQuickReplies,
-    NlpCustomPayload,
     NlpParameters,
     NlpContext,
 } from '../../model/NlpAdapterResponse';
 import { logger } from '../../../logger';
-import { DetectIntentResponse, Message, Context } from 'dialogflow';
+import * as dialogflow from '@google-cloud/dialogflow';
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { getConfig } from '../../../core/getConfig';
 import { DialogflowAgent, DialogflowConfig } from '../dialogflowConfig';
 
-export function toNlpStatus(response: DetectIntentResponse): NlpStatus {
+export function toNlpStatus(response: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentResponse): NlpStatus {
     return {
-        errorDetails: response.webhookStatus.details,
-        errorType: response.webhookStatus.message,
-        success: response.webhookStatus.code === 0,
+        errorDetails: response.webhookStatus?.details === null ? "" : response.webhookStatus?.details,
+        errorType: response.webhookStatus?.message === null ? "" : response.webhookStatus?.message,
+        success: response.webhookStatus?.code === 0,
     };
 }
 
@@ -30,52 +27,60 @@ export function toNlpStatus(response: DetectIntentResponse): NlpStatus {
  * @param agentName Name of the agent the query was sent to. Specified as a key in your `config.ts`.
  */
 export function toNlpTextResponse(
-    responseArray: DetectIntentResponse[],
+    response: dialogflow.protos.google.cloud.dialogflow.v2.IDetectIntentResponse,
     agentName: string,
 ): NlpResponse {
-    if (!!responseArray[1]) {
-        logger.error(
-            `${LOG_MESSAGES.nlp.moreThanOneResponse}${JSON.stringify(
-                responseArray[1],
-                undefined,
-                2,
-            )}`,
-        );
-    }
 
     const dialogflowConfig = getConfig().platform.nlp as DialogflowConfig;
     const dialogflowAgent = dialogflowConfig.agents[agentName];
 
-    const response = responseArray[0];
     const result = response.queryResult;
-    const nlpMessages = result.fulfillmentMessages
+
+    if (result?.fulfillmentMessages === null || result?.fulfillmentMessages === undefined) {
+        throw Error(`Malformed NLP response: ${result}`);
+    }
+    const nlpMessages = result?.fulfillmentMessages
         .map(toNlpMessage)
         .filter(Boolean) as NlpMessage[];
 
-    const contexts = result.outputContexts.map(context =>
+    if (result?.outputContexts === null || result?.outputContexts === undefined) {
+        throw Error(`Malformed NLP response: ${result}`);
+    }
+    const contexts = result.outputContexts.map((context: dialogflow.protos.google.cloud.dialogflow.v2.IContext) =>
         getContext(context, dialogflowAgent),
     );
+
+    if (result?.intent?.isFallback === null || result.intent?.isFallback === undefined)
+        throw Error(`Malformed NLP response: ${result}`);
+
     const isFallback = result.intent.isFallback;
     const isFallbackIntent = isFallback === undefined ? false : isFallback;
 
     const webhookStatus = response.webhookStatus;
     const status =
-        webhookStatus === null
+        webhookStatus === null || webhookStatus === undefined
             ? { success: true }
             : ({
-                  errorDetails:
-                      webhookStatus.details === null
-                          ? undefined
-                          : response.webhookStatus.details,
-                  errorType:
-                      response.webhookStatus.message === null
-                          ? undefined
-                          : response.webhookStatus.message,
-                  success:
-                      response.webhookStatus.code === null
-                          ? true
-                          : response.webhookStatus.code === 0,
-              } as NlpStatus);
+                errorDetails:
+                    webhookStatus.details === null
+                        ? undefined
+                        : webhookStatus.details,
+                errorType:
+                    webhookStatus.message === null
+                        ? undefined
+                        : webhookStatus.message,
+                success:
+                    webhookStatus.code === null
+                        ? true
+                        : webhookStatus.code === 0,
+            } as NlpStatus);
+
+
+    if (result.action === null ||
+        result.fulfillmentText === null ||
+        result.queryText === null || result.queryText === undefined ||
+        result.intentDetectionConfidence === null || result.intentDetectionConfidence === undefined)
+        throw Error(`Malformed NLP response: ${result}`);
 
     const transformedNlpResponse: NlpResponse = {
         agentName,
@@ -108,16 +113,16 @@ export function toNlpTextResponse(
  * We split the path, take the last part of the path (only the context name) and set it as our context name.
  */
 
-function getContext(context: Context, agent: DialogflowAgent): NlpContext {
+function getContext(context: dialogflow.protos.google.cloud.dialogflow.v2.IContext, agent: DialogflowAgent): NlpContext {
     let contextName = '';
-    if (context.name !== undefined) {
+    if (context.name !== undefined && context.name !== null) {
         contextName =
             context.name
                 .split('/')
                 .slice(-1)
                 .pop() || '';
     }
-    if (context.lifespanCount !== undefined) {
+    if (context.lifespanCount !== undefined && context.lifespanCount !== null) {
         return {
             lifespan: context.lifespanCount,
             name: contextName,
@@ -130,29 +135,39 @@ function getContext(context: Context, agent: DialogflowAgent): NlpContext {
     };
 }
 
-function toNlpMessage(message: Message): NlpMessage | undefined {
-    switch (message.message) {
-        case 'text':
+function toNlpMessage(message: dialogflow.protos.google.cloud.dialogflow.v2.Intent.IMessage): NlpMessage | undefined {
+    if (message.text !== null) {
+        if (message.text?.text !== null && message.text?.text !== undefined)
             return {
-                text: message.text.text[0], // Is an array according to docs, unknown when another index will be chosen.
-                type: 'text',
-            } as NlpText;
-        case 'quickReplies':
+                text: message.text.text[0],
+                type: 'text'
+            }
+    }
+
+    if (message.quickReplies !== null) {
+        if (message.quickReplies?.quickReplies !== null && message.quickReplies?.quickReplies !== undefined
+            && message.quickReplies.title !== null && message.quickReplies.title !== undefined) {
             return {
                 replies: message.quickReplies.quickReplies,
                 title: message.quickReplies.title,
-                type: 'quickReply',
-            } as NlpQuickReplies;
-        case 'payload':
-            return {
-                payload: message.payload,
-                type: 'custom',
-            } as NlpCustomPayload;
-        default:
-            logger.error(
-                `${LOG_MESSAGES.nlp.adapter.dialogflowV2Adapter}${LOG_MESSAGES.nlp.toNlpMessage}`,
-            );
-
-            return undefined;
+                type: 'quickReply'
+            }
+        }
     }
+
+    if (message.payload !== null && message.payload !== undefined) {
+        return {
+            payload: {
+                payload: message.payload,
+                type: 'istruct'
+            },
+            type: 'custom'
+        }
+    }
+
+    logger.error(
+        `${LOG_MESSAGES.nlp.adapter.dialogflowV2Adapter}${LOG_MESSAGES.nlp.toNlpMessage}`,
+    );
+
+    return undefined;
 }

@@ -1,6 +1,7 @@
 import { logger } from '../../../logger';
 import { NlpStatus } from '../../model/NlpAdapterResponse';
-import { CreateContextReqeust, ContextsClient } from 'dialogflow';
+import { ContextsClient } from '@google-cloud/dialogflow';
+import * as dialogflow from '@google-cloud/dialogflow'
 import { LOG_MESSAGES } from '../../../constants/logMessages';
 import { DialogflowAgent } from '../dialogflowConfig';
 
@@ -13,7 +14,7 @@ export async function postContexts(
         keyFilename: agent.token,
         projectId: agent.project_id,
     });
-    const sessionPath = contextsClient.sessionPath(
+    const sessionPath = contextsClient.projectAgentSessionPath(
         agent.project_id,
         internalUserId,
     );
@@ -57,12 +58,11 @@ function createPostRequestConfiguration(
     context: string,
     sessionPath: string,
     defaultLifespan: number,
-): CreateContextReqeust {
+): dialogflow.protos.google.cloud.dialogflow.v2.ICreateContextRequest {
     return {
         context: {
             lifespanCount: defaultLifespan,
             name: `${sessionPath}/contexts/${context}`,
-            parameters: [],
         },
         parent: sessionPath,
     };

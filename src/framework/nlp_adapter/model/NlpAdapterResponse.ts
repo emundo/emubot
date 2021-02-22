@@ -1,3 +1,4 @@
+import * as dialogflow from '@google-cloud/dialogflow'
 export type NlpStatus = {
     success: boolean;
     errorType?: string;
@@ -26,8 +27,8 @@ export type NlpParameters = {
 };
 type SingleNlpParameter =
     | {
-          [key: string]: string;
-      }
+        [key: string]: string;
+    }
     | { fields: SingleNlpParameter }
     | string
     | string[]
@@ -71,7 +72,7 @@ export type NlpQuickReplies = {
  */
 export type NlpCustomPayload = {
     type: 'custom';
-    payload: NlpCustomPayloadButton | NlpCustomPayloadQuickReply;
+    payload: NlpCustomPayloadButton | NlpCustomPayloadQuickReply | NlpCustomPayloadIStruct;
 };
 
 export type UrlButton = {
@@ -92,22 +93,28 @@ export type CallButton = {
     payload: string; // phone number
 };
 
+
+export type NlpCustomPayloadIStruct = {
+    payload: dialogflow.protos.google.protobuf.IStruct;
+    type: 'istruct';
+};
+
 export type NlpCustomPayloadButton =
     | {
-          type: 'urlButton';
-          title: string;
-          payload: UrlButton[];
-      }
+        type: 'urlButton';
+        title: string;
+        payload: UrlButton[];
+    }
     | {
-          type: 'postBackButton';
-          title: string;
-          payload: PostBackButton[];
-      }
+        type: 'postBackButton';
+        title: string;
+        payload: PostBackButton[];
+    }
     | {
-          type: 'callButton';
-          title: string;
-          payload: CallButton[];
-      };
+        type: 'callButton';
+        title: string;
+        payload: CallButton[];
+    };
 
 export type NlpCustomPayloadQuickReply = {
     type: 'customQuickReply';
